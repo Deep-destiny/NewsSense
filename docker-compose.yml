@@ -1,0 +1,14 @@
+
+services:
+  dashboard:
+    build: .
+    container_name: newssense-app
+    ports:
+      - "5000:5000"
+    volumes:
+      # Syncs your local directories with the container so models persist
+      - ./models:/app/models
+      - ./data:/app/data
+      # Syncs your code so you don't have to rebuild Docker for every Python edit
+      - ./src:/app/src
+      - ./app.py:/app/app.py
