@@ -1,160 +1,78 @@
-from flask import Flask, render_template_string, request
+from flask import Flask, render_template, request
 import pandas as pd
 from src.ingest import fetch_news
 from src.sentiment import analyze_sentiment_batch
 from src.charts import generate_distribution_chart
-from src.train import load_model_and_predict
-import os
+from src.train import predict_market_trend
+from src.rag import build_rag_context, generate_rag_summary
+import logging
 
 app = Flask(__name__)
-
-TEMPLATE = """
-<!DOCTYPE html>
-<html>
-<head>
-    <title>NewsSense - Financial Sentiment Dashboard</title>
-    <style>
-        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; margin: 40px; background-color: #f8f9fa; color: #212529; }
-        .container { max-width: 1100px; margin: 0 auto; background: white; padding: 30px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
-        h1 { color: #2c3e50; border-bottom: 2px solid #eee; padding-bottom: 10px; }
-        .disclaimer { background-color: #fff3cd; color: #856404; padding: 15px; border-radius: 6px; border: 1px solid #ffeeba; margin-bottom: 25px; font-size: 0.9em; line-height: 1.5; }
-        .search-box { margin-bottom: 30px; background: #f8f9fa; padding: 20px; border-radius: 8px; border: 1px solid #e9ecef; }
-        .search-box input[type="text"] { padding: 10px; width: 300px; border: 1px solid #ced4da; border-radius: 4px; }
-        .search-box button { padding: 10px 20px; background-color: #0d6efd; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; }
-        .search-box button:hover { background-color: #0b5ed7; }
-        
-        .dashboard-grid { display: flex; gap: 25px; margin-bottom: 30px; }
-        .panel { flex: 1; padding: 20px; border: 1px solid #e9ecef; border-radius: 8px; background: #fff; box-shadow: 0 2px 4px rgba(0,0,0,0.02); }
-        .panel h3 { margin-top: 0; color: #495057; }
-        
-        .prediction-positive { color: #0f5132; background-color: #d1e7dd; padding: 15px; border-radius: 6px; text-align: center; font-size: 1.2em; font-weight: bold; }
-        .prediction-negative { color: #842029; background-color: #f8d7da; padding: 15px; border-radius: 6px; text-align: center; font-size: 1.2em; font-weight: bold; }
-        .prediction-neutral { color: #41464b; background-color: #e2e3e5; padding: 15px; border-radius: 6px; text-align: center; font-size: 1.2em; font-weight: bold; }
-        
-        table { width: 100%; border-collapse: collapse; margin-top: 20px; font-size: 0.95em; }
-        th, td { padding: 15px 12px; text-align: left; border-bottom: 1px solid #dee2e6; }
-        th { background-color: #f8f9fa; font-weight: 600; color: #495057; }
-        tr:hover { background-color: #f8f9fa; }
-        a { text-decoration: none; color: #0d6efd; }
-        a:hover { text-decoration: underline; }
-        
-        .badge-positive { color: #198754; font-weight: bold; background: #d1e7dd; padding: 4px 8px; border-radius: 12px; font-size: 0.85em; }
-        .badge-negative { color: #dc3545; font-weight: bold; background: #f8d7da; padding: 4px 8px; border-radius: 12px; font-size: 0.85em; }
-        .badge-neutral { color: #6c757d; font-weight: bold; background: #e9ecef; padding: 4px 8px; border-radius: 12px; font-size: 0.85em; }
-        
-        .chart-container { text-align: center; }
-        img { max-width: 100%; height: auto; border-radius: 4px; }
-    </style>
-</head>
-<body>
-    <div class="container">
-        <h1>📰 NewsSense Indian Markets Dashboard</h1>
-
-        <div class="disclaimer">
-            <strong>SEBI Disclaimer:</strong> This tool is a technical demonstration for educational purposes only. The sentiment analysis and ML predictions provided do not constitute financial advice.
-        </div>
-
-        <div class="search-box">
-            <form method="GET" action="/">
-                <label style="margin-right: 10px; font-weight: 600;">Ticker / Topic:</label>
-                <input type="text" name="q" value="{{ query }}" placeholder="e.g., RELIANCE or NIFTY 50">
-                <button type="submit">Analyze News</button>
-            </form>
-        </div>
-
-        {% if error %}
-            <div style="color: #842029; background-color: #f8d7da; padding: 15px; border-radius: 6px;">
-                <strong>Error:</strong> {{ error }}
-            </div>
-        {% elif articles %}
-            <div class="dashboard-grid">
-                <div class="panel chart-container">
-                    <h3>Sentiment Distribution</h3>
-                    {% if dist_chart %}
-                        <img src="data:image/png;base64,{{ dist_chart }}" alt="Sentiment Chart">
-                    {% else %}
-                        <p style="color: #6c757d;">Chart generation failed.</p>
-                    {% endif %}
-                </div>
-                
-                <div class="panel">
-                    <h3>Model Signal</h3>
-                    {% if prediction %}
-                        <p style="color: #6c757d; margin-bottom: 15px;">Based on historical sentiment-price correlation:</p>
-                        <div class="prediction-{{ prediction['label'].lower() }}">
-                            Predicted Trend: {{ prediction['label'] }}<br>
-                            <span style="font-size: 0.75em; font-weight: normal;">(Confidence: {{ "%.1f"|format(prediction['confidence'] * 100) }}%)</span>
-                        </div>
-                    {% else %}
-                        <div style="background: #e9ecef; padding: 20px; border-radius: 6px; text-align: center; color: #6c757d;">
-                            <em>No trained ML model found. Run the training pipeline to enable predictions.</em>
-                        </div>
-                    {% endif %}
-                </div>
-            </div>
-
-            <h3>Recent Headlines ({{ articles|length }})</h3>
-            <table>
-                <tr>
-                    <th style="width: 15%;">Published</th>
-                    <th style="width: 55%;">Headline</th>
-                    <th style="width: 15%;">Sentiment</th>
-                    <th style="width: 15%;">Score</th>
-                </tr>
-                {% for item in articles %}
-                <tr>
-                    <td style="color: #6c757d; font-size: 0.9em;">{{ item.published }}</td>
-                    <td><a href="{{ item.link }}" target="_blank">{{ item.title }}</a></td>
-                    <td><span class="badge-{{ item.sentiment|lower }}">{{ item.sentiment }}</span></td>
-                    <td><strong>{{ "%.2f"|format(item.score) }}</strong></td>
-                </tr>
-                {% endfor %}
-            </table>
-        {% endif %}
-    </div>
-</body>
-</html>
-"""
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
 @app.route("/")
 def index():
-    query = request.args.get("q", "NIFTY")
+    query = request.args.get("q", "NIFTY 50")
     try:
+        # Step 1: Ingest live financial news via Google News RSS
         news_items = fetch_news(query, max_results=20)
         if not news_items:
-            return render_template_string(TEMPLATE, query=query, error="No recent news found for this query.")
+            return render_template(
+                "index.html",
+                query=query,
+                error=f"No recent news articles found for query '{query}'. Try another ticker."
+            )
 
-        df = analyze_sentiment_batch(news_items)
+        # Step 2: Run batch FinBERT transformer inference
+        df, metrics = analyze_sentiment_batch(news_items)
 
+        # Format publication timestamps for clean tabular display
         if 'published' in df.columns:
             df['published'] = pd.to_datetime(df['published'], errors='coerce').dt.strftime('%d %b %Y, %H:%M')
-            df['published'] = df['published'].fillna('Unknown')
+            df['published'] = df['published'].fillna('Recent')
 
+        # Step 3: Generate headless in-memory distribution chart
         dist_chart_b64 = None
         try:
             dist_chart_b64 = generate_distribution_chart(df)
-        except Exception as e:
-            print(f"Chart error: {e}")
+        except Exception as chart_err:
+            app.logger.error(f"Visualization error: {chart_err}")
 
+        # Step 4: Compute dynamic predictive ML signal using real sentiment polarity
         prediction = None
-        if os.path.exists("models/sentiment_model.pkl"):
-            try:
-                prediction = load_model_and_predict()
-            except Exception as e:
-                print(f"Prediction error: {e}") 
+        try:
+            prediction = predict_market_trend(sentiment_score=metrics["net_score"])
+        except Exception as pred_err:
+            app.logger.error(f"Inference prediction error: {pred_err}")
+
+        # Step 5: RAG Pipeline — Retrieval-Augmented Generation for contextual insights
+        rag_result = None
+        try:
+            rag_store = build_rag_context(news_items, df)
+            rag_result = generate_rag_summary(rag_store, query, metrics, top_k=5)
+            app.logger.info(
+                f"RAG pipeline: {rag_result['rag_metadata'].get('docs_retrieved', 0)} docs retrieved, "
+                f"outlook={rag_result['rag_metadata'].get('outlook', 'N/A')}"
+            )
+        except Exception as rag_err:
+            app.logger.error(f"RAG pipeline error: {rag_err}")
 
         articles = df.to_dict(orient="records")
 
-        return render_template_string(
-            TEMPLATE,
+        # Step 6: Render View template with RAG-enhanced context
+        return render_template(
+            "index.html",
             query=query,
             articles=articles,
+            metrics=metrics,
             dist_chart=dist_chart_b64,
-            prediction=prediction
+            prediction=prediction,
+            rag_result=rag_result
         )
 
     except Exception as e:
-        return render_template_string(TEMPLATE, query=query, error=str(e))
+        app.logger.error(f"Unhandled server error: {e}")
+        return render_template("index.html", query=query, error=f"Internal Server Error: {str(e)}")
 
 if __name__ == "__main__":
     app.run(debug=True, host="0.0.0.0", port=5000)

@@ -1,0 +1,633 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NewsSense | Financial Sentiment & Market Intelligence</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #2563eb;
+            --primary-hover: #1d4ed8;
+            --bg: #f8fafc;
+            --surface: #ffffff;
+            --border: #e2e8f0;
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+            --bullish-bg: #dcfce7;
+            --bullish-text: #15803d;
+            --bearish-bg: #fee2e2;
+            --bearish-text: #b91c1c;
+            --neutral-bg: #f1f5f9;
+            --neutral-text: #475569;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: var(--bg);
+            color: var(--text-main);
+            line-height: 1.5;
+            padding: 30px 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        /* Header */
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: var(--surface);
+            padding: 20px 30px;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            margin-bottom: 24px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.03);
+        }
+
+        .brand-title {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .brand-title h1 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--text-main);
+            letter-spacing: -0.02em;
+        }
+
+        .badge-model {
+            background: #eff6ff;
+            color: var(--primary);
+            font-size: 0.75rem;
+            font-weight: 600;
+            padding: 4px 10px;
+            border-radius: 20px;
+            border: 1px solid #bfdbfe;
+        }
+
+        .status-pill {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            font-weight: 500;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            background-color: #10b981;
+            border-radius: 50%;
+            box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.2);
+        }
+
+        /* Search Section */
+        .search-card {
+            background: var(--surface);
+            padding: 24px 30px;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            margin-bottom: 24px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.03);
+        }
+
+        .search-form {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        .search-input {
+            flex: 1;
+            padding: 12px 18px;
+            font-size: 0.95rem;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            background: #f8fafc;
+            outline: none;
+            transition: all 0.2s;
+            font-family: inherit;
+        }
+
+        .search-input:focus {
+            border-color: var(--primary);
+            background: #fff;
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+        }
+
+        .search-btn {
+            padding: 12px 28px;
+            background-color: var(--primary);
+            color: #fff;
+            font-weight: 600;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background 0.2s;
+            font-family: inherit;
+        }
+
+        .search-btn:hover { background-color: var(--primary-hover); }
+
+        .preset-pills {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+
+        .preset-link {
+            text-decoration: none;
+            background: #f1f5f9;
+            color: var(--text-main);
+            padding: 4px 12px;
+            border-radius: 6px;
+            font-weight: 500;
+            font-size: 0.8rem;
+            transition: all 0.15s;
+        }
+
+        .preset-link:hover {
+            background: #e2e8f0;
+            color: var(--primary);
+        }
+
+        /* Metric Cards */
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .metric-card {
+            background: var(--surface);
+            padding: 20px 24px;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.03);
+        }
+
+        .metric-title {
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+            margin-bottom: 8px;
+        }
+
+        .metric-value {
+            font-size: 1.6rem;
+            font-weight: 700;
+            color: var(--text-main);
+        }
+
+        .metric-sub {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            margin-top: 4px;
+        }
+
+        /* Dashboard Grid */
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: 1.1fr 0.9fr;
+            gap: 24px;
+            margin-bottom: 24px;
+        }
+
+        @media (max-width: 900px) {
+            .dashboard-grid { grid-template-columns: 1fr; }
+        }
+
+        .panel {
+            background: var(--surface);
+            padding: 24px;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.03);
+        }
+
+        .panel-header {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--text-main);
+            margin-bottom: 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .chart-wrapper {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 280px;
+        }
+
+        .chart-wrapper img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 6px;
+        }
+
+        /* Prediction Card */
+        .signal-box {
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .signal-bullish {
+            background: var(--bullish-bg);
+            border: 1px solid #bbf7d0;
+            color: var(--bullish-text);
+        }
+
+        .signal-bearish {
+            background: var(--bearish-bg);
+            border: 1px solid #fecaca;
+            color: var(--bearish-text);
+        }
+
+        .signal-neutral {
+            background: var(--neutral-bg);
+            border: 1px solid #e2e8f0;
+            color: var(--neutral-text);
+        }
+
+        .signal-title {
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 6px;
+        }
+
+        .signal-label {
+            font-size: 1.8rem;
+            font-weight: 800;
+            letter-spacing: -0.02em;
+        }
+
+        .signal-confidence {
+            font-size: 0.9rem;
+            font-weight: 500;
+            margin-top: 4px;
+            opacity: 0.9;
+        }
+
+        .progress-bar-container {
+            margin-top: 15px;
+        }
+
+        .progress-label {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            margin-bottom: 6px;
+        }
+
+        .progress-track {
+            height: 10px;
+            background: #e2e8f0;
+            border-radius: 10px;
+            overflow: hidden;
+            display: flex;
+        }
+
+        .progress-bullish { background: #10b981; }
+        .progress-bearish { background: #ef4444; }
+
+        /* Headlines Table */
+        .table-card {
+            background: var(--surface);
+            padding: 24px;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            margin-bottom: 24px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.03);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.9rem;
+        }
+
+        th {
+            text-align: left;
+            padding: 12px 14px;
+            font-weight: 600;
+            color: var(--text-muted);
+            border-bottom: 2px solid var(--border);
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        td {
+            padding: 16px 14px;
+            border-bottom: 1px solid var(--border);
+            vertical-align: middle;
+        }
+
+        tr:hover { background-color: #f8fafc; }
+
+        .headline-link {
+            text-decoration: none;
+            color: var(--text-main);
+            font-weight: 500;
+            transition: color 0.15s;
+        }
+
+        .headline-link:hover { color: var(--primary); }
+
+        .pill {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 16px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            letter-spacing: 0.02em;
+        }
+
+        .pill-positive { background: var(--bullish-bg); color: var(--bullish-text); }
+        .pill-negative { background: var(--bearish-bg); color: var(--bearish-text); }
+        .pill-neutral { background: var(--neutral-bg); color: var(--neutral-text); }
+
+        /* SEBI Disclaimer */
+        .disclaimer-card {
+            background: #fffbeb;
+            border: 1px solid #fef3c7;
+            color: #92400e;
+            padding: 18px 24px;
+            border-radius: 10px;
+            font-size: 0.82rem;
+            line-height: 1.6;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header>
+            <div class="brand-title">
+                <h1>📰 NewsSense</h1>
+                <span class="badge-model">FinBERT Transformer v1.0</span>
+            </div>
+            <div class="status-pill">
+                <span class="status-dot"></span>
+                <span>Inference Engine Live</span>
+            </div>
+        </header>
+
+        <!-- Search Bar -->
+        <div class="search-card">
+            <form method="GET" action="/" class="search-form">
+                <input type="text" name="q" class="search-input" value="{{ query }}" placeholder="Search Indian stock or sector (e.g. RELIANCE, NIFTY 50, INFY, TATA MOTORS)..." required>
+                <button type="submit" class="search-btn">Analyze Sentiment</button>
+            </form>
+            <div class="preset-pills">
+                <span>Popular Benchmarks:</span>
+                <a href="/?q=NIFTY+50" class="preset-link">NIFTY 50</a>
+                <a href="/?q=BANKNIFTY" class="preset-link">BANK NIFTY</a>
+                <a href="/?q=RELIANCE" class="preset-link">RELIANCE</a>
+                <a href="/?q=TCS" class="preset-link">TCS</a>
+                <a href="/?q=HDFC+BANK" class="preset-link">HDFC BANK</a>
+                <a href="/?q=INFY" class="preset-link">INFOSYS</a>
+                <a href="/?q=TATA+MOTORS" class="preset-link">TATA MOTORS</a>
+            </div>
+        </div>
+
+        {% if error %}
+            <div style="background: #fee2e2; border: 1px solid #fca5a5; color: #991b1b; padding: 20px; border-radius: 10px; margin-bottom: 24px;">
+                <strong>Notice:</strong> {{ error }}
+            </div>
+        {% elif articles %}
+            <!-- Metric Cards -->
+            <div class="metrics-grid">
+                <div class="metric-card">
+                    <div class="metric-title">Headlines Sampled</div>
+                    <div class="metric-value">{{ metrics['total'] }}</div>
+                    <div class="metric-sub">Last 7 days lookback</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-title">Bullish Sentiment</div>
+                    <div class="metric-value" style="color: #15803d;">{{ metrics['positive_pct'] }}%</div>
+                    <div class="metric-sub">{{ metrics['positive_count'] }} Positive articles</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-title">Bearish Sentiment</div>
+                    <div class="metric-value" style="color: #b91c1c;">{{ metrics['negative_pct'] }}%</div>
+                    <div class="metric-sub">{{ metrics['negative_count'] }} Negative articles</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-title">Net Polarity Index</div>
+                    <div class="metric-value">
+                        {% if metrics['net_score'] > 0.55 %}
+                            <span style="color: #15803d;">+{{ "%.2f"|format((metrics['net_score'] - 0.5) * 2) }}</span>
+                        {% elif metrics['net_score'] < 0.45 %}
+                            <span style="color: #b91c1c;">{{ "%.2f"|format((metrics['net_score'] - 0.5) * 2) }}</span>
+                        {% else %}
+                            <span style="color: #475569;">0.00 Neutral</span>
+                        {% endif %}
+                    </div>
+                    <div class="metric-sub">Normalized [-1.0 to +1.0]</div>
+                </div>
+            </div>
+
+            <!-- Visualization & Prediction Panels -->
+            <div class="dashboard-grid">
+                <div class="panel">
+                    <div class="panel-header">
+                        <span>Sentiment Distribution</span>
+                        <span style="font-size: 0.8rem; font-weight: normal; color: var(--text-muted);">In-Memory Headless Agg</span>
+                    </div>
+                    <div class="chart-wrapper">
+                        {% if dist_chart %}
+                            <img src="data:image/png;base64,{{ dist_chart }}" alt="Sentiment Breakdown Chart">
+                        {% else %}
+                            <p style="color: var(--text-muted);">Chart generation unavailable.</p>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="panel">
+                    <div class="panel-header">
+                        <span>Predictive ML Market Signal</span>
+                        <span style="font-size: 0.8rem; font-weight: normal; color: var(--text-muted);">Logistic Regression</span>
+                    </div>
+
+                    {% if prediction %}
+                        <div class="signal-box signal-{{ prediction['label'].lower() }}">
+                            <div class="signal-title">Forecasted Intraday Trend</div>
+                            <div class="signal-label">{{ prediction['label'] }}</div>
+                            <div class="signal-confidence">Calibrated Confidence: {{ "%.1f"|format(prediction['confidence'] * 100) }}%</div>
+                        </div>
+
+                        <div class="progress-bar-container">
+                            <div class="progress-label">
+                                <span>Bullish Probability</span>
+                                <span>{{ "%.1f"|format(prediction['prob_bullish'] * 100) }}%</span>
+                            </div>
+                            <div class="progress-track" style="margin-bottom: 12px;">
+                                <div class="progress-bullish" style="width: {{ prediction['prob_bullish'] * 100 }}%;"></div>
+                            </div>
+
+                            <div class="progress-label">
+                                <span>Bearish Probability</span>
+                                <span>{{ "%.1f"|format(prediction['prob_bearish'] * 100) }}%</span>
+                            </div>
+                            <div class="progress-track">
+                                <div class="progress-bearish" style="width: {{ prediction['prob_bearish'] * 100 }}%;"></div>
+                            </div>
+                        </div>
+                    {% else %}
+                        <div style="background: #f1f5f9; padding: 30px; border-radius: 8px; text-align: center; color: var(--text-muted);">
+                            <em>ML model checkpoint not loaded. Run <code>python run_pipeline.py</code> to initialize weights.</em>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- RAG Intelligence Panel -->
+            {% if rag_result and rag_result.rag_metadata and rag_result.rag_metadata.status == 'success' %}
+            <div class="table-card" style="margin-bottom: 24px;">
+                <div class="panel-header" style="margin-bottom: 16px;">
+                    <span>🧠 RAG-Enhanced Market Intelligence</span>
+                    <span style="font-size: 0.8rem; font-weight: normal; color: var(--text-muted);">Retrieval-Augmented Generation</span>
+                </div>
+
+                <!-- RAG Summary -->
+                <div style="background: #f0f9ff; border: 1px solid #bae6fd; border-radius: 10px; padding: 20px; margin-bottom: 20px; white-space: pre-line; font-size: 0.9rem; line-height: 1.7; color: #0c4a6e;">
+                    {{ rag_result.summary }}
+                </div>
+
+                <!-- RAG Pipeline Metadata -->
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; margin-bottom: 20px;">
+                    <div class="metric-card" style="padding: 14px 18px;">
+                        <div class="metric-title" style="font-size: 0.7rem;">Docs Indexed</div>
+                        <div class="metric-value" style="font-size: 1.2rem;">{{ rag_result.rag_metadata.docs_indexed }}</div>
+                    </div>
+                    <div class="metric-card" style="padding: 14px 18px;">
+                        <div class="metric-title" style="font-size: 0.7rem;">Docs Retrieved (Top-K)</div>
+                        <div class="metric-value" style="font-size: 1.2rem;">{{ rag_result.rag_metadata.docs_retrieved }}</div>
+                    </div>
+                    <div class="metric-card" style="padding: 14px 18px;">
+                        <div class="metric-title" style="font-size: 0.7rem;">Avg. Cosine Similarity</div>
+                        <div class="metric-value" style="font-size: 1.2rem;">{{ rag_result.rag_metadata.avg_similarity }}</div>
+                    </div>
+                    <div class="metric-card" style="padding: 14px 18px;">
+                        <div class="metric-title" style="font-size: 0.7rem;">Vector Dimensions</div>
+                        <div class="metric-value" style="font-size: 1.2rem;">{{ rag_result.rag_metadata.vector_dimensions }}</div>
+                    </div>
+                    <div class="metric-card" style="padding: 14px 18px;">
+                        <div class="metric-title" style="font-size: 0.7rem;">Retrieval Method</div>
+                        <div class="metric-value" style="font-size: 0.85rem; font-weight: 600;">{{ rag_result.rag_metadata.retrieval_method }}</div>
+                    </div>
+                    <div class="metric-card" style="padding: 14px 18px;">
+                        <div class="metric-title" style="font-size: 0.7rem;">Market Outlook</div>
+                        <div class="metric-value" style="font-size: 1rem; font-weight: 700;
+                            {% if rag_result.rag_metadata.outlook in ['strongly bullish', 'mildly bullish'] %}
+                                color: #15803d;
+                            {% elif rag_result.rag_metadata.outlook in ['strongly bearish', 'mildly bearish'] %}
+                                color: #b91c1c;
+                            {% else %}
+                                color: #475569;
+                            {% endif %}
+                        ">{{ rag_result.rag_metadata.outlook | capitalize }}</div>
+                    </div>
+                </div>
+
+                <!-- Retrieved Documents -->
+                {% if rag_result.retrieved_docs %}
+                <div style="margin-top: 16px;">
+                    <div style="font-size: 0.85rem; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 12px;">
+                        Top Retrieved Documents (Ranked by Semantic Similarity)
+                    </div>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th style="width: 8%;">Rank</th>
+                                <th style="width: 50%;">Retrieved Headline</th>
+                                <th style="width: 14%;">Sentiment</th>
+                                <th style="width: 14%;">Confidence</th>
+                                <th style="width: 14%;">Similarity</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for doc in rag_result.retrieved_docs %}
+                            <tr>
+                                <td style="font-weight: 700; color: var(--primary);">#{{ loop.index }}</td>
+                                <td>
+                                    {% if doc.metadata.link %}
+                                        <a href="{{ doc.metadata.link }}" target="_blank" rel="noopener noreferrer" class="headline-link">{{ doc.metadata.title }}</a>
+                                    {% else %}
+                                        {{ doc.metadata.title }}
+                                    {% endif %}
+                                </td>
+                                <td><span class="pill pill-{{ doc.metadata.sentiment|lower }}">{{ doc.metadata.sentiment }}</span></td>
+                                <td style="font-weight: 600; color: var(--text-muted);">{{ "%.1f"|format(doc.metadata.score * 100) }}%</td>
+                                <td style="font-weight: 600; color: var(--primary);">{{ "%.4f"|format(doc.similarity_score) }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% endif %}
+            </div>
+            {% endif %}
+
+            <!-- Headlines Table -->
+            <div class="table-card">
+                <div class="panel-header" style="margin-bottom: 20px;">
+                    <span>Underlying Headlines & FinBERT Classifications ({{ articles|length }})</span>
+                </div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th style="width: 18%;">Published (IST)</th>
+                            <th style="width: 54%;">Headline</th>
+                            <th style="width: 14%;">Tone</th>
+                            <th style="width: 14%;">Confidence</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in articles %}
+                        <tr>
+                            <td style="color: var(--text-muted); font-size: 0.82rem;">{{ item.published }}</td>
+                            <td><a href="{{ item.link }}" target="_blank" rel="noopener noreferrer" class="headline-link">{{ item.title }}</a></td>
+                            <td><span class="pill pill-{{ item.sentiment|lower }}">{{ item.sentiment }}</span></td>
+                            <td style="font-weight: 600; color: var(--text-muted);">{{ "%.1f"|format(item.score * 100) }}%</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% endif %}
+
+        <!-- Compliance Disclaimer -->
+        <div class="disclaimer-card">
+            <strong>Regulatory & Compliance Notice (SEBI Disclaimer):</strong>
+            This software is an algorithmic machine learning demonstration engineered for academic research and educational purposes. The sentiment classifications generated by FinBERT and statistical predictions produced by the Scikit-learn model do not constitute registered investment, trading, or financial advice under the Securities and Exchange Board of India (SEBI) Investment Advisers Regulations, 2013. Market investments carry capital risks.
+        </div>
+    </div>
+</body>
+</html>

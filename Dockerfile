@@ -11,7 +11,8 @@ COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Pre-download the FinBERT model during build so the app is instantly responsive later
-RUN pip install --no-cache-dir -r requirements.txt --index-url https://download.pytorch.org/whl/cpu
+RUN python -c "from transformers import pipeline; pipeline('sentiment-analysis', model='yiyanghkust/finbert-tone')"
+
 # Copy your source code
 COPY . .
 
