@@ -5,6 +5,7 @@ from src.sentiment import analyze_sentiment_batch
 from src.charts import generate_distribution_chart
 from src.train import predict_market_trend
 from src.rag import build_rag_context, generate_rag_summary
+from src.database import register_or_login_user, init_db
 import logging
 import os
 
@@ -12,18 +13,20 @@ app = Flask(__name__)
 app.secret_key = os.environ.get("SECRET_KEY", "newssense-production-secret-key-2026")
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
+# Ensure SQLite database is initialized
+init_db()
+
 @app.route("/")
 def home():
     """
     Landing Page & Dashboard Route:
-    - If user visits root '/' without ?q=, serve the 3D aesthetic landing page (NEWSAI.html).
+    - If user visits root '/' without ?q=, serve the 3D aesthetic landing page.
     - If user provides ?q= (e.g. '/?q=RELIANCE'), render the full financial intelligence dashboard.
     """
     q_param = request.args.get("q")
     if not q_param:
         return render_template("landing.html")
 
-    # If ?q= is provided, serve the real-time financial intelligence dashboard
     return render_dashboard(q_param)
 
 @app.route("/dashboard")
@@ -31,6 +34,56 @@ def dashboard():
     """Direct dashboard endpoint (e.g. /dashboard?q=RELIANCE)"""
     query = request.args.get("q", "RELIANCE")
     return render_dashboard(query)
+
+@app.route("/auth")
+def auth_page():
+    """Dedicated aesthetic authentication gateway (Guest or Email/Password)"""
+    return render_template("auth.html")
+
+@app.route("/auth/guest")
+def auth_guest():
+    """1-Click Guest sign in: initializes session and redirects to /?q=RELIANCE"""
+    session["user"] = "Guest Trader"
+    session["role"] = "Guest"
+    session["is_authenticated"] = True
+    app.logger.info("Guest session initialized. Redirecting to real-time dashboard.")
+    return redirect(url_for("home", q="RELIANCE"))
+
+@app.route("/auth/login", methods=["GET", "POST"])
+def auth_login():
+    """
+    Sign up / Login with email & password:
+    Persists real user credentials (hashed) in SQLite database data/users.db,
+    then launches real-time dashboard.
+    """
+    if request.method == "GET":
+        return redirect(url_for("auth_page"))
+
+    email = request.form.get("email", "").strip()
+    password = request.form.get("password", "").strip()
+
+    if not email or not password:
+        return render_template("auth.html", error="Please enter both email and password.")
+
+    success, user_data, msg = register_or_login_user(email, password)
+    if not success:
+        return render_template("auth.html", error=msg)
+
+    # Set session for registered trader
+    username = email.split("@")[0].replace(".", " ").title()
+    session["user"] = username
+    session["email"] = email
+    session["role"] = "Registered Trader"
+    session["is_authenticated"] = True
+    app.logger.info(f"User {email} authenticated in DB. Launching real-time dashboard.")
+
+    return redirect(url_for("home", q="RELIANCE"))
+
+@app.route("/logout")
+def logout():
+    """Clears authentication session and returns to landing page"""
+    session.clear()
+    return redirect(url_for("home"))
 
 def render_dashboard(query):
     """Core dashboard execution pipeline: Ingest -> FinBERT -> Chart -> ML Signal -> RAG"""
@@ -94,38 +147,6 @@ def render_dashboard(query):
     except Exception as e:
         app.logger.error(f"Unhandled server error: {e}")
         return render_template("index.html", query=query, error=f"Internal Server Error: {str(e)}")
-
-# ============================================================
-# AUTHENTICATION & ACCESS GATEWAY (Guest & Credentials)
-# ============================================================
-@app.route("/auth/guest")
-def auth_guest():
-    """1-Click Guest sign in: initializes session and redirects to /?q=RELIANCE"""
-    session["user"] = "Guest Trader"
-    session["role"] = "Guest"
-    session["is_authenticated"] = True
-    app.logger.info("Guest session initialized. Redirecting to real-time dashboard.")
-    return redirect(url_for("home", q="RELIANCE"))
-
-@app.route("/auth/login", methods=["POST"])
-def auth_login():
-    """Sign up / Login with email & password: sets session and launches real-time dashboard"""
-    email = request.form.get("email", "trader@newssense.ai").strip()
-    password = request.form.get("password", "")
-    username = email.split("@")[0].replace(".", " ").title() if "@" in email else "Trader"
-    
-    session["user"] = username
-    session["email"] = email
-    session["role"] = "Pro Trader"
-    session["is_authenticated"] = True
-    app.logger.info(f"User {email} authenticated. Redirecting to real-time dashboard.")
-    return redirect(url_for("home", q="RELIANCE"))
-
-@app.route("/logout")
-def logout():
-    """Clears authentication session and returns to landing page"""
-    session.clear()
-    return redirect(url_for("home"))
 
 if __name__ == "__main__":
     app.run(debug=True, host="0.0.0.0", port=5000)

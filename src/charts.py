@@ -46,8 +46,8 @@ def generate_distribution_chart(df):
     # Styling spines and gridlines for dark mode
     ax.spines['top'].set_visible(False)
     ax.spines['right'].set_visible(False)
-    ax.spines['left'].set_color('rgba(255,255,255,0.12)')
-    ax.spines['bottom'].set_color('rgba(255,255,255,0.12)')
+    ax.spines['left'].set_color((1.0, 1.0, 1.0, 0.15))
+    ax.spines['bottom'].set_color((1.0, 1.0, 1.0, 0.15))
     
     ax.yaxis.grid(True, linestyle='--', alpha=0.15, color='#ffffff', zorder=0)
     ax.set_axisbelow(True)

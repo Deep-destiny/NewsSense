@@ -164,7 +164,7 @@ nav {
   align-items: center;
   justify-content: space-between;
   padding: 1.8rem 5vw;
-  pointer-events: all;
+  pointer-events: auto;
   background: linear-gradient(to bottom, rgba(2,3,5,0.8), transparent);
   backdrop-filter: blur(0px);
 }
@@ -571,10 +571,14 @@ section {
   padding: 1rem 2.8rem;
   text-decoration: none;
   transition: transform 0.3s, box-shadow 0.3s;
-  pointer-events: all;
-  opacity: 0;
+  pointer-events: auto !important;
+  cursor: pointer !important;
+  z-index: 50;
   position: relative;
-  overflow: hidden;
+  opacity: 0;
+}
+#outro {
+  pointer-events: auto !important;
 }
 .cta-btn::after {
   content: '';
@@ -653,269 +657,7 @@ section {
   nav .nav-links { display: none; }
   #pipeline { justify-content: center; padding: 0 5vw; }
   #features { padding: 0 5vw; }
-/* ============================================================
-   AUTH MODAL STYLES (Cyberpunk / Fintech Glassmorphism)
-   ============================================================ */
-#auth-modal-overlay {
-  position: fixed;
-  inset: 0;
-  z-index: 10000;
-  background: rgba(2, 3, 5, 0.88);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-#auth-modal-overlay.active {
-  opacity: 1;
-  pointer-events: all;
-}
-
-#auth-modal-card {
-  background: rgba(8, 12, 22, 0.96);
-  border: 1px solid rgba(0, 229, 160, 0.35);
-  border-radius: 16px;
-  max-width: 490px;
-  width: 90%;
-  padding: 38px 34px;
-  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.85), 0 0 50px rgba(0, 229, 160, 0.15);
-  transform: translateY(25px) scale(0.96);
-  transition: transform 0.32s cubic-bezier(0.16, 1, 0.3, 1);
-  position: relative;
-  overflow: hidden;
-}
-
-#auth-modal-overlay.active #auth-modal-card {
-  transform: translateY(0) scale(1);
-}
-
-#auth-modal-card::before {
-  content: '';
-  position: absolute;
-  top: 0; left: 0; right: 0;
-  height: 2px;
-  background: linear-gradient(90deg, var(--neutral), var(--bull), var(--gold));
-}
-
-#auth-close-btn {
-  position: absolute;
-  top: 18px;
-  right: 20px;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid var(--border);
-  color: var(--muted);
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1.1rem;
-  cursor: pointer;
-  transition: all 0.2s;
-  outline: none;
-}
-
-#auth-close-btn:hover {
-  color: var(--text);
-  border-color: var(--bear);
-  background: rgba(255, 69, 96, 0.2);
-  transform: rotate(90deg);
-}
-
-.auth-header {
-  margin-bottom: 24px;
-}
-
-.auth-badge {
-  font-family: var(--font-mono);
-  font-size: 0.65rem;
-  letter-spacing: 0.18em;
-  color: var(--bull);
-  text-transform: uppercase;
-  margin-bottom: 8px;
-  display: inline-block;
-}
-
-.auth-title {
-  font-family: var(--font-disp);
-  font-size: 1.85rem;
-  font-weight: 800;
-  color: var(--text);
-  letter-spacing: -0.02em;
-  margin-bottom: 6px;
-}
-
-.auth-title .accent {
-  color: var(--bull);
-}
-
-.auth-desc {
-  font-size: 0.78rem;
-  color: var(--muted);
-  line-height: 1.6;
-}
-
-/* Guest Button (1-Click Instant) */
-.btn-guest-access {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  background: rgba(0, 229, 160, 0.1);
-  border: 1px solid rgba(0, 229, 160, 0.35);
-  border-radius: 10px;
-  padding: 16px 20px;
-  text-decoration: none;
-  color: var(--text);
-  transition: all 0.25s;
-  margin-bottom: 22px;
-  cursor: pointer;
-}
-
-.btn-guest-access:hover {
-  background: rgba(0, 229, 160, 0.2);
-  border-color: var(--bull);
-  box-shadow: 0 0 30px rgba(0, 229, 160, 0.28);
-  transform: translateY(-2px);
-}
-
-.guest-btn-content {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-}
-
-.guest-icon {
-  font-size: 1.4rem;
-}
-
-.guest-title {
-  display: block;
-  font-family: var(--font-mono);
-  font-size: 0.85rem;
-  font-weight: 600;
-  color: var(--bull);
-  letter-spacing: 0.08em;
-}
-
-.guest-sub {
-  display: block;
-  font-size: 0.68rem;
-  color: var(--muted);
-  font-family: var(--font-mono);
-  margin-top: 2px;
-}
-
-.btn-arrow {
-  font-family: var(--font-mono);
-  font-size: 1.15rem;
-  color: var(--bull);
-  transition: transform 0.2s;
-}
-
-.btn-guest-access:hover .btn-arrow {
-  transform: translateX(4px);
-}
-
-/* Divider */
-.auth-divider {
-  display: flex;
-  align-items: center;
-  text-align: center;
-  margin-bottom: 20px;
-  color: var(--muted);
-  font-family: var(--font-mono);
-  font-size: 0.62rem;
-  letter-spacing: 0.14em;
-}
-
-.auth-divider::before,
-.auth-divider::after {
-  content: '';
-  flex: 1;
-  border-bottom: 1px solid var(--border);
-}
-
-.auth-divider span {
-  padding: 0 12px;
-}
-
-/* Form */
-.auth-form {
-  display: flex;
-  flex-direction: column;
-  gap: 15px;
-}
-
-.form-group {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-.form-group label {
-  font-family: var(--font-mono);
-  font-size: 0.64rem;
-  letter-spacing: 0.14em;
-  color: var(--muted);
-  text-transform: uppercase;
-}
-
-.form-group input {
-  background: rgba(2, 3, 5, 0.85);
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  padding: 12px 16px;
-  color: var(--text);
-  font-family: var(--font-mono);
-  font-size: 0.84rem;
-  outline: none;
-  transition: all 0.2s;
-}
-
-.form-group input:focus {
-  border-color: var(--neutral);
-  box-shadow: 0 0 18px rgba(123, 156, 255, 0.25);
-  background: rgba(5, 8, 16, 0.95);
-}
-
-.btn-auth-submit {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
-  background: var(--bull);
-  color: #000;
-  border: none;
-  border-radius: 8px;
-  padding: 14px;
-  font-family: var(--font-mono);
-  font-size: 0.82rem;
-  font-weight: 700;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  cursor: pointer;
-  transition: all 0.25s;
-  margin-top: 6px;
-}
-
-.btn-auth-submit:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 10px 30px rgba(0, 229, 160, 0.35);
-}
-
-.auth-footer-notice {
-  margin-top: 18px;
-  text-align: center;
-  font-family: var(--font-mono);
-  font-size: 0.6rem;
-  letter-spacing: 0.08em;
-  color: rgba(255, 255, 255, 0.3);
+  #chart-legend { display: none; }
 }
 </style>
 </head>
@@ -972,65 +714,13 @@ section {
     NewsSense <span class="logo-pill">FinBERT</span>
   </a>
   <ul class="nav-links">
-    <li><a href="javascript:void(0)" class="open-auth-btn">Dashboard</a></li>
+    <li><a href="/auth">Dashboard</a></li>
     <li><a href="#pipeline">Pipeline</a></li>
     <li><a href="#features">Model</a></li>
     <li><a href="#stack">Stack</a></li>
   </ul>
-  <a class="nav-cta open-auth-btn" href="javascript:void(0)">Launch App</a>
+  <a class="nav-cta" href="/auth">Launch App</a>
 </nav>
-
-<!-- AUTH MODAL (GUEST & EMAIL/PASSWORD) -->
-<div id="auth-modal-overlay">
-  <div id="auth-modal-card">
-    <button id="auth-close-btn" type="button" aria-label="Close Modal">&times;</button>
-    
-    <div class="auth-header">
-      <span class="auth-badge">AUTHENTICATION GATEWAY // SECURE</span>
-      <h3 class="auth-title">ACCESS <span class="accent">NEWSSENSE</span></h3>
-      <p class="auth-desc">Choose your trading session access mode to launch the FinBERT & RAG market intelligence dashboard.</p>
-    </div>
-
-    <!-- ⚡ Quick Guest Access (Instant 1-Click) -->
-    <a href="/auth/guest" class="btn-guest-access">
-      <div class="guest-btn-content">
-        <span class="guest-icon">⚡</span>
-        <div>
-          <span class="guest-title">CONTINUE AS GUEST</span>
-          <span class="guest-sub">Instant 1-Click Access // No Credentials Required</span>
-        </div>
-      </div>
-      <span class="btn-arrow">→</span>
-    </a>
-
-    <!-- Divider -->
-    <div class="auth-divider">
-      <span>OR SIGN IN WITH CREDENTIALS</span>
-    </div>
-
-    <!-- Email & Password Form -->
-    <form class="auth-form" method="POST" action="/auth/login">
-      <div class="form-group">
-        <label for="auth-email">TRADER EMAIL</label>
-        <input type="email" id="auth-email" name="email" placeholder="deepak@newssense.ai" required>
-      </div>
-
-      <div class="form-group">
-        <label for="auth-password">SECURITY KEY / PASSWORD</label>
-        <input type="password" id="auth-password" name="password" placeholder="••••••••••••" required>
-      </div>
-
-      <button type="submit" class="btn-auth-submit">
-        <span>AUTHENTICATE & LAUNCH DASHBOARD</span>
-        <span>→</span>
-      </button>
-    </form>
-
-    <div class="auth-footer-notice">
-      AUTHENTICATED ACCESS · SEBI ACADEMIC & RESEARCH COMPLIANCE
-    </div>
-  </div>
-</div>
 
 <!-- Scroll container -->
 <div id="scroll-container">
@@ -1189,12 +879,13 @@ section {
     <div class="disclaimer-box" id="disclaimer-box">
       <p>⚠ SEBI Disclaimer — This tool is a technical demonstration for educational and research purposes only. Sentiment scores and ML predictions do not constitute financial advice. Past sentiment-price correlation does not guarantee future results.</p>
     </div>
-    <a href="javascript:void(0)" class="cta-btn open-auth-btn" id="cta-btn">Launch Dashboard</a>
+    <a href="/auth" class="cta-btn" id="cta-btn">Launch Dashboard</a>
   </section>
 
 </div>
 
 <script>
+
 /* ============================================================
    THREE.JS — 3D SENTIMENT BAR CHART
    Bars animate up/down as you scroll through the page
@@ -1723,58 +1414,11 @@ section {
 /* ============================================================
    SCROLL LABEL HIDE
    ============================================================ */
-/* ============================================================
-   AUTH MODAL INTERACTION
-   ============================================================ */
-(function(){
-  const modal = document.getElementById('auth-modal-overlay');
-  const closeBtn = document.getElementById('auth-close-btn');
-  const openButtons = document.querySelectorAll('.open-auth-btn');
-
-  openButtons.forEach(btn => {
-    btn.addEventListener('click', (e) => {
-      e.preventDefault();
-      modal.classList.add('active');
-    });
-  });
-
-  if (closeBtn) {
-    closeBtn.addEventListener('click', () => {
-      modal.classList.remove('active');
-    });
-  }
-
-  if (modal) {
-    modal.addEventListener('click', (e) => {
-      if (e.target === modal) {
-        modal.classList.remove('active');
-      }
-    });
-  }
-
-  // Escape key closes modal
-  document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape' && modal.classList.contains('active')) {
-      modal.classList.remove('active');
-    }
-  });
-
-  // Cursor expand on modal inputs
-  document.querySelectorAll('#auth-modal-card input, #auth-modal-card button, .btn-guest-access').forEach(el => {
-    const ring = document.getElementById('cursor-ring');
-    if (!ring) return;
-    el.addEventListener('mouseenter', () => {
-      ring.style.width = '48px';
-      ring.style.height = '48px';
-      ring.style.borderColor = 'rgba(0,229,160,0.8)';
-    });
-    el.addEventListener('mouseleave', () => {
-      ring.style.width = '32px';
-      ring.style.height = '32px';
-      ring.style.borderColor = 'rgba(0,229,160,0.4)';
-    });
-  });
-})();
+window.addEventListener('scroll', ()=>{
+  const lbl = document.getElementById('scroll-label');
+  if(window.scrollY > 120) lbl.style.opacity='0';
+  else lbl.style.opacity='1';
+}, { passive:true });
 </script>
 </body>
 </html>
