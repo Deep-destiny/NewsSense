@@ -847,6 +847,11 @@
             <div class="status-pill">
                 <span class="status-dot"></span>
                 <span>INFERENCE ENGINE LIVE // 7-YR OHLCV</span>
+                {% if session.get('user') %}
+                <span style="color: var(--bull); font-weight: 600;">[ {{ session.get('user') }} ]</span>
+                <a href="/logout" style="color: var(--muted); text-decoration: none; padding: 2px 8px; border: 1px solid var(--border); border-radius: 4px; font-size: 0.68rem; transition: all 0.2s;">LOGOUT</a>
+                {% endif %}
+                <a href="/" style="color: var(--neutral); text-decoration: none; padding: 2px 8px; border: 1px solid rgba(123, 156, 255, 0.3); border-radius: 4px; font-size: 0.68rem; transition: all 0.2s;">← LANDING</a>
             </div>
         </header>
 

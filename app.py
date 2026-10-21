@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request
+from flask import Flask, render_template, request, redirect, url_for, session
 import pandas as pd
 from src.ingest import fetch_news
 from src.sentiment import analyze_sentiment_batch
@@ -6,13 +6,34 @@ from src.charts import generate_distribution_chart
 from src.train import predict_market_trend
 from src.rag import build_rag_context, generate_rag_summary
 import logging
+import os
 
 app = Flask(__name__)
+app.secret_key = os.environ.get("SECRET_KEY", "newssense-production-secret-key-2026")
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
 @app.route("/")
-def index():
-    query = request.args.get("q", "NIFTY 50")
+def home():
+    """
+    Landing Page & Dashboard Route:
+    - If user visits root '/' without ?q=, serve the 3D aesthetic landing page (NEWSAI.html).
+    - If user provides ?q= (e.g. '/?q=RELIANCE'), render the full financial intelligence dashboard.
+    """
+    q_param = request.args.get("q")
+    if not q_param:
+        return render_template("landing.html")
+
+    # If ?q= is provided, serve the real-time financial intelligence dashboard
+    return render_dashboard(q_param)
+
+@app.route("/dashboard")
+def dashboard():
+    """Direct dashboard endpoint (e.g. /dashboard?q=RELIANCE)"""
+    query = request.args.get("q", "RELIANCE")
+    return render_dashboard(query)
+
+def render_dashboard(query):
+    """Core dashboard execution pipeline: Ingest -> FinBERT -> Chart -> ML Signal -> RAG"""
     try:
         # Step 1: Ingest live financial news via Google News RSS
         news_items = fetch_news(query, max_results=20)
@@ -31,7 +52,7 @@ def index():
             df['published'] = pd.to_datetime(df['published'], errors='coerce').dt.strftime('%d %b %Y, %H:%M')
             df['published'] = df['published'].fillna('Recent')
 
-        # Step 3: Generate headless in-memory distribution chart
+        # Step 3: Generate headless in-memory distribution chart (dark theme)
         dist_chart_b64 = None
         try:
             dist_chart_b64 = generate_distribution_chart(df)
@@ -73,6 +94,38 @@ def index():
     except Exception as e:
         app.logger.error(f"Unhandled server error: {e}")
         return render_template("index.html", query=query, error=f"Internal Server Error: {str(e)}")
+
+# ============================================================
+# AUTHENTICATION & ACCESS GATEWAY (Guest & Credentials)
+# ============================================================
+@app.route("/auth/guest")
+def auth_guest():
+    """1-Click Guest sign in: initializes session and redirects to /?q=RELIANCE"""
+    session["user"] = "Guest Trader"
+    session["role"] = "Guest"
+    session["is_authenticated"] = True
+    app.logger.info("Guest session initialized. Redirecting to real-time dashboard.")
+    return redirect(url_for("home", q="RELIANCE"))
+
+@app.route("/auth/login", methods=["POST"])
+def auth_login():
+    """Sign up / Login with email & password: sets session and launches real-time dashboard"""
+    email = request.form.get("email", "trader@newssense.ai").strip()
+    password = request.form.get("password", "")
+    username = email.split("@")[0].replace(".", " ").title() if "@" in email else "Trader"
+    
+    session["user"] = username
+    session["email"] = email
+    session["role"] = "Pro Trader"
+    session["is_authenticated"] = True
+    app.logger.info(f"User {email} authenticated. Redirecting to real-time dashboard.")
+    return redirect(url_for("home", q="RELIANCE"))
+
+@app.route("/logout")
+def logout():
+    """Clears authentication session and returns to landing page"""
+    session.clear()
+    return redirect(url_for("home"))
 
 if __name__ == "__main__":
     app.run(debug=True, host="0.0.0.0", port=5000)
