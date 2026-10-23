@@ -17,38 +17,43 @@ Built with a **scroll-driven 3D WebGL spatial viewport**, a **risk-adjusted CAGR
 
 ```mermaid
 flowchart TD
-    subgraph Data Layer ["1. Distributed Data Ingestion"]
-        YF["Yahoo Finance API<br/>(10Y Adjusted Daily Closes, Balance Sheets, Ratios)"]
-        GNews["Google News RSS Engine<br/>(Real-Time Multi-Query Entity Search)"]
-        NSE["NIFTY 50 Universe Sync<br/>(Live Index Weights & Sectors)"]
+    subgraph DataLayer ["1. Distributed Data Ingestion"]
+        YF["Yahoo Finance API<br/>10Y Closes, Balance Sheets"]
+        GNews["Google News RSS Engine<br/>Real-Time Multi-Query Search"]
+        NSE["NIFTY 50 Universe Sync<br/>Live Index Weights and Sectors"]
     end
 
-    subgraph Quant Engine ["2. Quantitative Valuation & Machine Learning Engine"]
-        FE["Feature Pipeline<br/>(Momentum, Rolling Volatility, Drawdowns, Valuation Ratios)"]
-        Models["Purged Walk-Forward ML Models<br/>(RandomForest Ensemble Regressors & Classifiers)"]
-        Hurdles["Quantitative CAGR Hurdle Framework<br/>(Risk-Adjusted Return vs Probability-Weighted Downside)"]
-        RAG["Deterministic TF-IDF Retrieval Engine<br/>(Vector Space Entity Extraction & Source Citation)"]
+    subgraph QuantEngine ["2. Quantitative Valuation and ML Engine"]
+        FE["Feature Pipeline<br/>Momentum, Volatility, Drawdowns"]
+        Models["Purged Walk-Forward Ensemble<br/>RandomForest Regressors and Classifiers"]
+        Hurdles["Quantitative CAGR Hurdle Framework<br/>Risk-Adjusted Return vs Downside"]
+        RAG["Deterministic TF-IDF Retrieval<br/>Entity Extraction and Citation Mapping"]
     end
 
-    subgraph App Layer ["3. High-Throughput Flask Backend"]
-        Cache["In-Memory Cache (TTL 60s)<br/>(Force-Refresh Bypass & Rate Limiting)"]
-        Auth["SQLite Gateway<br/>(SHA-256 Auth & Ephemeral Guest Sandbox)"]
-        REST["REST API Endpoints<br/>(/api/universe, /api/company, /api/news, /api/scan)"]
+    subgraph AppLayer ["3. High-Throughput Flask Backend"]
+        Cache["In-Memory Cache 60s TTL<br/>Force-Refresh Bypass"]
+        Auth["SQLite Gateway<br/>SHA-256 Auth and Guest Sandbox"]
+        REST["REST API Endpoints<br/>Universe, Company, News, Scan"]
     end
 
-    subgraph UI Layer ["4. Next-Gen Front-End Terminal"]
-        Three["Three.js Spatial Engine<br/>(Scroll-Linked 3D Camera Travel, Geometry Morphing, Particle Lattice)"]
-        Charts["Dual Chart.js Real-Time Viewports<br/>(1Y/5Y/10Y Adjusted Price Trends & Cross-Sectional Scan Bars)"]
-        OLED["Luxury OLED Obsidian Dark Theme<br/>(0% Murky Tint, High-Contrast Financial Telemetry)"]
+    subgraph UILayer ["4. Next-Gen Front-End Terminal"]
+        Three["Three.js Spatial Engine<br/>Scroll-Linked 3D Camera Travel"]
+        Charts["Dual Chart.js Viewports<br/>Price History and Ranking Bars"]
+        OLED["Luxury OLED Obsidian Theme<br/>High-Contrast Financial Telemetry"]
     end
 
     YF --> FE
     GNews --> RAG
     NSE --> FE
-    FE --> Models --> Hurdles
-    Hurdles & RAG --> Cache --> REST
+    FE --> Models
+    Models --> Hurdles
+    Hurdles --> Cache
+    RAG --> Cache
     Auth --> REST
-    REST --> UI Layer
+    Cache --> REST
+    REST --> Three
+    REST --> Charts
+    REST --> OLED
 ```
 
 ---
