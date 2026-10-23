@@ -1,0 +1,645 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>NewsSense | NIFTY 50 Research</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+    <style>
+        :root { color-scheme: light; --paper:#f1f5f3; --white:#fff; --ink:#172a28; --muted:#687774; --line:#dce5e1; --green:#087f65; --blue:#386fa1; --amber:#a56616; --red:#a74843; --mono:"IBM Plex Mono",monospace; --sans:"Manrope",sans-serif; }
+        * { box-sizing:border-box; }
+        body { margin:0; background:var(--paper); color:var(--ink); font-family:var(--sans); transition:background .2s,color .2s; }
+        button, select { font:inherit; }
+        .shell { max-width:1560px; margin:auto; padding:22px 30px 48px; }
+        header { display:flex; justify-content:space-between; align-items:center; gap:20px; padding-bottom:18px; border-bottom:1px solid var(--line); }
+        .brand { display:flex; align-items:center; gap:10px; text-decoration:none; color:var(--ink); font-weight:800; }
+        .brand-mark { width:32px; height:32px; display:grid; place-items:center; border-radius:8px; background:var(--ink); color:#fff; font:11px var(--mono); }
+        .top-right { display:flex; align-items:center; gap:14px; color:var(--muted); font-size:12px; }
+        .top-right a { text-decoration:none; }
+        .theme-toggle { display:inline-flex; align-items:center; gap:8px; padding:7px 10px; border:1px solid var(--line); border-radius:5px; background:var(--white); color:var(--ink); font-size:10px; cursor:pointer; }
+        .toggle-track { width:24px; height:14px; padding:2px; border-radius:8px; background:#bdc8c3; }
+        .toggle-track::after { content:""; display:block; width:10px; height:10px; border-radius:50%; background:white; transition:transform .2s; }
+        .theme-toggle[aria-pressed="true"] .toggle-track { background:var(--green); }
+        .theme-toggle[aria-pressed="true"] .toggle-track::after { transform:translateX(10px); }
+        .market-state { display:inline-flex; align-items:center; gap:7px; color:var(--green); font:10px var(--mono); text-transform:uppercase; }
+        .market-state::before { content:""; width:7px; height:7px; background:currentColor; border-radius:50%; }
+        .eyebrow { margin:28px 0 8px; color:var(--green); font:10px var(--mono); text-transform:uppercase; }
+        .title-row { display:flex; align-items:end; justify-content:space-between; gap:20px; }
+        h1 { margin:0; font-size:30px; line-height:1.2; }
+        .subtitle { margin:7px 0 0; color:var(--muted); font-size:12px; }
+        .selector { display:flex; align-items:center; gap:9px; }
+        .research-controls { display:flex; align-items:end; gap:10px; }
+        .selector label { color:var(--muted); font:10px var(--mono); text-transform:uppercase; }
+        select { min-width:240px; padding:10px 12px; border:1px solid var(--line); border-radius:5px; background:var(--white); color:var(--ink); font-size:12px; }
+        #horizonSelect { min-width:130px; }
+        .research-button { min-height:37px; padding:0 16px; border:1px solid var(--green); border-radius:5px; background:var(--green); color:#fff; font-size:11px; font-weight:800; cursor:pointer; }
+        .research-button:disabled { cursor:wait; opacity:.65; }
+        .selection-note { min-height:14px; margin-top:5px; color:var(--muted); font:9px var(--mono); }
+        .metrics { display:grid; grid-template-columns:repeat(6,minmax(0,1fr)); gap:10px; margin:22px 0; }
+        .metric { min-height:87px; padding:13px 14px; border:1px solid var(--line); border-radius:6px; background:var(--white); }
+        .metric-label { color:var(--muted); font-size:9px; font-weight:700; text-transform:uppercase; }
+        .metric-value { margin-top:10px; font:16px var(--mono); }
+        .positive { color:var(--green); } .negative { color:var(--red); }
+        .layout { display:grid; grid-template-columns:minmax(0,1.65fr) minmax(310px,.85fr); gap:14px; align-items:start; }
+        .layout > div, .layout > aside { min-width:0; max-width:100%; }
+        .summary-panel { margin-bottom:14px; }
+        .summary-text { padding:14px 17px 7px; color:#43534f; font-size:11px; line-height:1.75; }
+        .summary-citations { display:flex; flex-wrap:wrap; gap:8px; padding:0 17px 14px; }
+        .summary-citations a { color:var(--blue); font:9px var(--mono); text-decoration:none; }
+        .summary-citations a:hover { text-decoration:underline; }
+        .panel { min-width:0; border:1px solid var(--line); border-radius:7px; background:var(--white); }
+        .panel-head { display:flex; align-items:center; justify-content:space-between; gap:14px; padding:15px 17px; border-bottom:1px solid var(--line); }
+        h2 { margin:0; font-size:13px; }
+        .panel-kicker { color:var(--muted); font:9px var(--mono); text-transform:uppercase; }
+        .chart-controls { display:flex; gap:4px; }
+        .chart-controls button { padding:5px 8px; border:1px solid transparent; border-radius:4px; background:transparent; color:var(--muted); font:9px var(--mono); cursor:pointer; }
+        .chart-controls button[aria-pressed="true"] { border-color:var(--line); background:#edf3f0; color:var(--ink); }
+        .chart-box { position:relative; min-width:0; height:275px; padding:12px 14px 16px; }
+        .chart-box canvas, .scan-chart canvas { display:block; max-width:100%; }
+        .company-heading { display:flex; justify-content:space-between; gap:15px; padding:16px 18px 0; }
+        .company-name { font-size:19px; font-weight:800; }
+        .company-symbol { margin-top:4px; color:var(--muted); font:10px var(--mono); }
+        .price-block { text-align:right; }
+        .last-price { font:19px var(--mono); }
+        .price-date { margin-top:5px; color:var(--muted); font:9px var(--mono); }
+        .facts-list { display:grid; grid-template-columns:1fr 1fr; gap:9px; padding:15px 17px 18px; }
+        .fact { min-width:0; padding:10px; border:1px solid #e8eeeb; border-radius:5px; }
+        .fact span { display:block; color:var(--muted); font-size:9px; }
+        .fact strong { display:block; overflow:hidden; margin-top:5px; font:12px var(--mono); text-overflow:ellipsis; white-space:nowrap; }
+        .research-copy { padding:0 17px 16px; color:#4f605c; font-size:11px; line-height:1.65; }
+        .signals { display:grid; gap:8px; padding:12px 16px 16px; }
+        .signal { display:grid; grid-template-columns:12px 1fr auto; align-items:start; gap:8px; font-size:10px; line-height:1.5; }
+        .signal-dot { width:7px; height:7px; margin-top:4px; border-radius:50%; background:var(--blue); }
+        .signal.growth .signal-dot { background:var(--green); } .signal.risk .signal-dot { background:var(--amber); }
+        .signal strong { display:block; font-size:10px; }
+        .signal small { color:var(--muted); }
+        .signal-value { color:var(--muted); font:10px var(--mono); }
+        .prediction { padding:16px 17px; }
+        .prediction-main { display:flex; justify-content:space-between; gap:12px; align-items:baseline; }
+        .prediction-value { font:25px var(--mono); }
+        .prediction-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+        .prediction-cell { padding:11px; border:1px solid #e7eeea; border-radius:5px; }
+        .prediction-cell span { display:block; color:var(--muted); font-size:9px; line-height:1.5; }
+        .prediction-cell strong { display:block; margin-top:7px; font:18px var(--mono); }
+        .research-view { margin-top:12px; color:var(--amber); font:10px var(--mono); text-transform:uppercase; }
+        .research-view.favorable { color:var(--green); }
+        .research-view.weak { color:var(--red); }
+        .validation-note { margin-top:7px; color:var(--muted); font-size:10px; line-height:1.55; }
+        .metric-value.watch { color:var(--blue); }
+        .decision { margin-top:12px; padding:11px 12px; border:1px solid var(--line); border-radius:5px; background:#f4f7f5; font:11px var(--mono); }
+        .decision.buy { border-color:#79b8a0; color:var(--green); }
+        .decision.no-buy { border-color:#d5a19b; color:var(--red); }
+        .decision.unvalidated { border-color:#c49a4e; color:#a77922; }
+        .decision.watch { border-color:#6c8daa; color:var(--blue); }
+                .validation { max-width:145px; color:var(--amber); font:9px var(--mono); text-align:right; text-transform:uppercase; }
+        .validation.valid { color:var(--green); }
+        .prediction p { margin:10px 0 0; color:var(--muted); font-size:10px; line-height:1.6; }
+        .source-link { display:inline-block; margin-top:10px; color:var(--blue); font-size:10px; text-decoration:none; }
+        .source-link:hover { text-decoration:underline; }
+        .live-btn { display:inline-flex; align-items:center; gap:5px; padding:4px 9px; border:1px solid var(--line); border-radius:4px; background:var(--white); color:var(--ink); font:9px var(--mono); cursor:pointer; transition:all .2s; }
+        .live-btn:hover { border-color:var(--green); color:var(--green); }
+        .live-btn:disabled { opacity:.5; cursor:wait; }
+        .live-pulse { display:inline-block; width:7px; height:7px; border-radius:50%; background:#00e5a0; box-shadow:0 0 6px rgba(0,229,160,0.8); animation:pulseGlow 2s infinite ease-in-out; }
+        @keyframes pulseGlow { 0% { opacity:1; transform:scale(1); } 50% { opacity:0.35; transform:scale(1.3); } 100% { opacity:1; transform:scale(1); } }
+        .live-status-pill { display:inline-flex; align-items:center; gap:6px; padding:3px 8px; border-radius:12px; background:rgba(8,127,101,0.08); border:1px solid rgba(8,127,101,0.2); font:9px var(--mono); color:var(--green); }
+                .news-list { display:grid; }
+        .news-item { padding:12px 16px; border-bottom:1px solid #edf1ef; transition:background .2s; }
+        .news-item:hover { background:rgba(8,127,101,0.03); }
+        .news-item:last-child { border-bottom:0; }
+        .news-item a { color:var(--ink); font-size:11px; font-weight:700; line-height:1.5; text-decoration:none; }
+        .news-item a:hover { color:var(--green); }
+        .news-meta { display:flex; gap:10px; margin-top:6px; color:var(--muted); font:9px var(--mono); }
+        .news-source-tag { display:inline-block; padding:1px 5px; border-radius:3px; background:#eef4f1; color:var(--ink); font-weight:600; }
+                .profile-list { display:grid; gap:6px; margin:0; padding:0 17px 16px 32px; color:#52615e; font-size:10px; line-height:1.55; }
+        .profile-list li::marker { color:var(--green); }
+        .scan { margin-top:15px; }
+        .scan-head { display:flex; align-items:center; justify-content:space-between; gap:16px; padding:15px 17px; border-bottom:1px solid var(--line); }
+        .scan-title { display:flex; flex-direction:column; gap:4px; }
+        .scan-title span { color:var(--muted); font-size:10px; }
+        .scan-tools { display:flex; align-items:center; gap:12px; color:var(--muted); font:9px var(--mono); }
+        .scan-chart { height:180px; padding:10px 18px; }
+        .table-wrap { max-height:470px; overflow:auto; border-top:1px solid var(--line); }
+        table { width:100%; border-collapse:collapse; white-space:nowrap; }
+        th { position:sticky; top:0; z-index:1; padding:10px 12px; background:#edf2f0; color:var(--muted); font:9px var(--mono); text-align:right; text-transform:uppercase; }
+        th:first-child, th:nth-child(2) { text-align:left; }
+        td { padding:10px 12px; border-top:1px solid #edf1ef; font-size:10px; text-align:right; }
+        td:first-child, td:nth-child(2) { text-align:left; }
+        tbody tr { cursor:pointer; } tbody tr:hover, tbody tr.selected { background:#f2f8f5; }
+        .table-company { font-weight:700; } .table-symbol { color:var(--muted); font:10px var(--mono); }
+        .estimate-status { display:inline-block; padding:2px 7px; border-radius:4px; font:9px var(--mono); text-transform:uppercase; }
+        .estimate-status.buy { background:rgba(8,127,101,0.12); color:var(--green); font-weight:700; }
+        .estimate-status.watch { background:rgba(59,130,246,0.12); color:var(--blue); font-weight:600; }
+        .estimate-status.avoid { background:rgba(220,38,38,0.12); color:var(--red); font-weight:600; }
+        .notice { margin-top:14px; padding:12px 14px; border-left:3px solid var(--blue); background:#eaf1f7; color:#425864; font-size:10px; line-height:1.6; }
+        .state { padding:20px 16px; color:var(--muted); font-size:11px; line-height:1.7; }
+        .state.error { color:var(--red); }
+        .loading { opacity:.6; }
+        /* Luxury OLED Obsidian Dark Mode — 0% Swamp Green Tint */
+        [data-theme="dark"] {
+            color-scheme: dark;
+            --paper: #03060c;
+            --white: #0a0e17;
+            --ink: #f1f5f9;
+            --muted: #8896ab;
+            --line: #162033;
+            --green: #10b981;
+            --blue: #38bdf8;
+            --amber: #f59e0b;
+            --red: #f87171;
+        }
+        [data-theme="dark"] body {
+            background: #03060c;
+            color: #f1f5f9;
+        }
+        [data-theme="dark"] header {
+            border-bottom-color: #162033;
+        }
+        [data-theme="dark"] .brand-mark {
+            background: #162033;
+            color: #38bdf8;
+        }
+        [data-theme="dark"] .eyebrow {
+            color: #38bdf8;
+        }
+        [data-theme="dark"] .metric,
+        [data-theme="dark"] .panel,
+        [data-theme="dark"] .theme-toggle {
+            background: #0a0e17;
+            border-color: #162033;
+            color: #f1f5f9;
+        }
+        [data-theme="dark"] select {
+            background-color: #0b111e;
+            border-color: #1c273e;
+            color: #f1f5f9;
+        }
+        [data-theme="dark"] select option {
+            background: #0a0e17;
+            color: #f1f5f9;
+        }
+        [data-theme="dark"] .research-button {
+            background: #2563eb;
+            border-color: #3b82f6;
+            color: #ffffff;
+            box-shadow: 0 0 16px rgba(37,99,235,0.35);
+        }
+        [data-theme="dark"] .research-button:hover {
+            background: #1d4ed8;
+        }
+        [data-theme="dark"] .fact,
+        [data-theme="dark"] .prediction-cell {
+            background: #060911;
+            border-color: #162033;
+        }
+        [data-theme="dark"] th {
+            background: #070b14;
+            color: #8896ab;
+            border-bottom: 1px solid #162033;
+        }
+        [data-theme="dark"] td {
+            border-color: #121826;
+            color: #cbd5e1;
+        }
+        [data-theme="dark"] tbody tr:hover,
+        [data-theme="dark"] tbody tr.selected {
+            background: #111827;
+        }
+        [data-theme="dark"] .table-wrap {
+            border-top-color: #162033;
+        }
+        [data-theme="dark"] .panel-head,
+        [data-theme="dark"] .scan-head {
+            border-bottom-color: #162033;
+        }
+        [data-theme="dark"] .notice {
+            border-color: #2563eb;
+            background: #081120;
+            color: #bfdbfe;
+        }
+        [data-theme="dark"] .summary-text,
+        [data-theme="dark"] .profile-list {
+            color: #94a3b8;
+        }
+        [data-theme="dark"] .research-copy {
+            color: #94a3b8;
+        }
+        [data-theme="dark"] .news-item {
+            border-color: #121826;
+        }
+        [data-theme="dark"] .news-item:hover {
+            background: rgba(56, 189, 248, 0.04);
+        }
+        [data-theme="dark"] .news-item a {
+            color: #f1f5f9;
+        }
+        [data-theme="dark"] .news-item a:hover {
+            color: #38bdf8;
+        }
+        [data-theme="dark"] .news-source-tag {
+            background: #101624;
+            color: #94a3b8;
+            border: 1px solid #1c273e;
+        }
+        [data-theme="dark"] .chart-controls button {
+            color: #8896ab;
+        }
+        [data-theme="dark"] .chart-controls button[aria-pressed="true"] {
+            background: #162033;
+            color: #f8fafc;
+            border-color: #26354f;
+        }
+        [data-theme="dark"] .live-btn {
+            background: #0b111e;
+            border-color: #1c273e;
+            color: #cbd5e1;
+        }
+        [data-theme="dark"] .live-btn:hover {
+            border-color: #38bdf8;
+            color: #38bdf8;
+        }
+        [data-theme="dark"] .live-status-pill {
+            background: rgba(56, 189, 248, 0.1);
+            border-color: rgba(56, 189, 248, 0.28);
+            color: #38bdf8;
+        }
+        [data-theme="dark"] .market-state {
+            color: #38bdf8;
+        }
+        [data-theme="dark"] .theme-toggle[aria-pressed="true"] .toggle-track {
+            background: #2563eb;
+        }
+        [data-theme="dark"] .decision {
+            background: #060911;
+            border-color: #162033;
+        }
+        [data-theme="dark"] .decision.buy {
+            background: rgba(16, 185, 129, 0.08);
+            border-color: rgba(16, 185, 129, 0.35);
+            color: #10b981;
+        }
+        [data-theme="dark"] .decision.watch {
+            background: rgba(56, 189, 248, 0.08);
+            border-color: rgba(56, 189, 248, 0.35);
+            color: #38bdf8;
+        }
+        [data-theme="dark"] .decision.no-buy {
+            background: rgba(248, 113, 113, 0.08);
+            border-color: rgba(248, 113, 113, 0.35);
+            color: #f87171;
+        }
+        [data-theme="dark"] .decision.unvalidated {
+            background: rgba(245, 158, 11, 0.08);
+            border-color: rgba(245, 158, 11, 0.35);
+            color: #fbbf24;
+        }
+        [data-theme="dark"] .estimate-status.buy {
+            background: rgba(16, 185, 129, 0.15);
+            color: #10b981;
+            border: 1px solid rgba(16, 185, 129, 0.3);
+        }
+        [data-theme="dark"] .estimate-status.watch {
+            background: rgba(56, 189, 248, 0.15);
+            color: #38bdf8;
+            border: 1px solid rgba(56, 189, 248, 0.3);
+        }
+        [data-theme="dark"] .estimate-status.avoid {
+            background: rgba(248, 113, 113, 0.15);
+            color: #f87171;
+            border: 1px solid rgba(248, 113, 113, 0.3);
+        }
+        @media (max-width:1050px) { .metrics { grid-template-columns:repeat(3,minmax(0,1fr)); } .layout { grid-template-columns:1fr; } }
+        @media (max-width:680px) { .shell { padding:15px 13px 32px; } header { align-items:flex-start; } .top-right { flex-wrap:wrap; justify-content:flex-end; gap:8px; font-size:10px; } .title-row { align-items:flex-start; flex-direction:column; } .research-controls { width:100%; align-items:stretch; flex-direction:column; } .selector { width:100%; align-items:flex-start; flex-direction:column; } select { width:100%; } .research-button { width:100%; } .metrics { grid-template-columns:repeat(3,minmax(0,1fr)); gap:7px; } .metric { min-height:77px; padding:10px 9px; } .metric-value { font-size:13px; } .metric-label { font-size:8px; } .panel-head, .scan-head { align-items:flex-start; flex-direction:column; } .chart-box { height:235px; padding-inline:5px; } .scan-chart { height:160px; padding-inline:5px; } .company-heading { padding-inline:13px; } .facts-list { padding-inline:12px; } .panel-kicker { white-space:normal; } }
+    </style>
+</head>
+<body>
+<main class="shell">
+    <header>
+        <a class="brand" href="/"><span class="brand-mark">NS</span><span>NewsSense</span></a>
+        <div class="top-right"><span class="market-state" id="dataState"><span class="live-pulse"></span> Connecting to live market</span><span>{{ user }}</span><button class="theme-toggle" id="themeToggle" type="button" aria-label="Switch to dark theme" aria-pressed="false"><span class="toggle-track" aria-hidden="true"></span><span id="themeLabel">Light</span></button><a href="/logout">Sign out</a></div>
+    </header>
+    <p class="eyebrow">NIFTY 50 / company research terminal</p>
+    <div class="title-row">
+        <div><h1>Company research</h1><p class="subtitle">Decade-long price context, reported fundamentals, current coverage, and an experimental 1–10 year estimate.</p></div>
+        <div class="research-controls">
+            <div class="selector"><label for="companySelect">Company</label><select id="companySelect"><option>Loading constituents…</option></select></div>
+            <div class="selector"><label for="horizonSelect">Forecast horizon</label><select id="horizonSelect">{% for years in range(1, 11) %}<option value="{{ years }}"{% if years == 10 %} selected{% endif %}>{{ years }} year{% if years != 1 %}s{% endif %}</option>{% endfor %}</select></div>
+            <button class="research-button" id="researchButton" type="button">Research</button>
+        </div>
+    </div>
+    <div class="selection-note" id="selectionNote">Showing the default 10-year forecast.</div>
+    <section class="metrics" id="performance" aria-label="Historical performance"></section>
+    <section class="panel summary-panel">
+        <div class="panel-head"><h2>Research snapshot</h2><span class="panel-kicker" id="summaryMode">Retrieving sourced context</span></div>
+        <p class="summary-text" id="summaryText">Loading adjusted-price history, company facts, and recent coverage.</p>
+        <div class="summary-citations" id="summaryCitations"></div>
+    </section>
+    <section class="layout">
+        <div>
+            <article class="panel">
+                <div class="company-heading"><div><div class="company-name" id="companyName">Choose a company</div><div class="company-symbol" id="companyMeta">NIFTY 50 constituent</div></div><div class="price-block"><div class="last-price" id="lastPrice">—</div><div class="price-date" id="priceDate">Waiting for data</div></div></div>
+                <div class="panel-head"><h2>Adjusted price history</h2><div class="chart-controls" aria-label="Chart period"><button type="button" data-period="1y" aria-pressed="false">1Y</button><button type="button" data-period="5y" aria-pressed="false">5Y</button><button type="button" data-period="10y" aria-pressed="true">10Y</button></div></div>
+                <div class="chart-box"><canvas id="priceChart" aria-label="Company historical adjusted prices"></canvas></div>
+            </article>
+            <article class="panel" style="margin-top:13px">
+                <div class="panel-head"><h2>Company facts</h2><a class="source-link" id="companySource" target="_blank" rel="noopener noreferrer">Open Yahoo Finance source ↗</a></div>
+                <div class="facts-list" id="factsList"><div class="state">Company profile loads with the selected ticker.</div></div>
+                <ul class="profile-list" id="profilePoints"></ul>
+                <div class="panel-head"><h2>Growth factors and risks</h2><span class="panel-kicker">Latest available reported data</span></div>
+                <div class="signals" id="factorsList"><div class="state">Waiting for company data.</div></div>
+                <div class="panel-head"><h2>Retrieved research evidence</h2><span class="panel-kicker">TF-IDF retrieval / cited sources</span></div>
+                <div class="news-list" id="evidenceList"><div class="state">Waiting for source material.</div></div>
+            </article>
+        </div>
+        <aside>
+            <article class="panel">
+                <div class="panel-head"><h2 id="predictionHeading">10-year outlook</h2><span class="panel-kicker" id="predictionHorizon">2,520 trading sessions</span></div>
+                <div class="prediction" id="prediction"><div class="state">Loading estimate and validation status.</div></div>
+            </article>
+            <article class="panel" style="margin-top:13px">
+                <div class="panel-head"><div><h2>Latest company coverage</h2><span class="panel-kicker" id="newsUpdated">Live / Google News RSS</span></div><button class="live-btn" id="refreshNewsBtn" type="button" title="Fetch latest company news in real time">🔄 Refresh News</button></div>
+                <div class="news-list" id="newsList"><div class="state">Loading recent coverage.</div></div>
+            </article>
+        </aside>
+    </section>
+    <section class="panel scan">
+        <div class="scan-head"><div class="scan-title"><h2>Constituent research scan</h2><span id="scanDescription">Ranked by quantitative CAGR & risk-adjusted hurdles across NIFTY 50.</span></div><div class="scan-tools"><span class="live-status-pill"><span class="live-pulse"></span> <span id="liveStatusText">LIVE QUOTES</span></span><span id="scanUpdated">Fetching current prices…</span><button class="live-btn" id="refreshScanBtn" type="button" title="Force refresh live quotes from NSE">⚡ Refresh Quotes</button></div></div>
+        <div class="scan-chart"><canvas id="scanChart" aria-label="Estimated one-year returns by company"></canvas></div>
+        <div class="table-wrap"><table><thead><tr><th>Company</th><th>Symbol</th><th>Latest close</th><th>1Y historical</th><th>5Y historical</th><th>10Y historical</th><th id="scanReturnHeading">Est. next 10Y</th><th>Chance gain</th><th>Chance loss</th><th>Loss if down</th><th>Decision</th><th>Data date</th></tr></thead><tbody id="scanRows"><tr><td colspan="12" class="state">Loading the model scan…</td></tr></tbody></table></div>
+    </section>
+    <aside class="notice"><strong>Important:</strong> price forecasts are model estimates, not expected or guaranteed personal profit. The model is shown as not validated unless it beats a simple historical baseline. Current constituents create survivorship bias in decade-long comparisons. Yahoo Finance data can be delayed or incomplete; news is linked to its publisher. This is a research tool, not financial advice.</aside>
+</main>
+<script>
+(() => {
+    const $ = (selector) => document.querySelector(selector);
+    const escapeHtml = (value) => String(value ?? "").replace(/[&<>"']/g, (character) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[character]);
+    const safeLink = (value) => { try { const url = new URL(value); return url.protocol === "https:" ? url.href : "#"; } catch { return "#"; } };
+    const pct = (value) => value == null ? "—" : `${value >= 0 ? "+" : ""}${(value * 100).toFixed(1)}%`;
+    const money = (value) => value == null ? "—" : new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR", maximumFractionDigits: 2 }).format(value);
+    const compactMoney = (value) => {
+        if (value == null) return "—";
+        const units = [[1e12, "T"], [1e9, "B"], [1e7, "Cr"], [1e5, "L"]];
+        for (const [size, suffix] of units) if (value >= size) return `₹${(value / size).toFixed(1)}${suffix}`;
+        return money(value);
+    };
+    let priceChart;
+    let scanChart;
+    let currentDetail;
+    let scanRows = [];
+    let selectedPeriod = "10y";
+    let selectedHorizon = 10;
+    let scanRequestGeneration = 0;
+
+    const savedTheme = localStorage.getItem("newssense-theme") || "light";
+    document.documentElement.dataset.theme = savedTheme;
+    $("#themeToggle").setAttribute("aria-pressed", String(savedTheme === "dark"));
+    $("#themeToggle").setAttribute("aria-label", `Switch to ${savedTheme === "dark" ? "light" : "dark"} theme`);
+    $("#themeLabel").textContent = savedTheme === "dark" ? "Dark" : "Light";
+
+    async function requestJson(url) {
+        const response = await fetch(url, { headers: { Accept: "application/json" } });
+        const payload = await response.json();
+        if (!response.ok) throw new Error(payload.error || `Request failed (${response.status})`);
+        return payload;
+    }
+
+    function drawPriceChart() {
+        if (!currentDetail || !window.Chart) return;
+        const dark = document.documentElement.dataset.theme === "dark";
+        const tickColor = dark ? "#8896ab" : "#788782";
+        const gridColor = dark ? "rgba(255, 255, 255, 0.06)" : "#edf1ef";
+        const points = currentDetail.history.dates.map((date, index) => ({ date, value: currentDetail.history.close[index] }));
+        const months = selectedPeriod === "1y" ? 12 : selectedPeriod === "5y" ? 60 : 120;
+        const filtered = points.slice(-months);
+        if (priceChart) priceChart.destroy();
+        priceChart = new Chart($("#priceChart"), {
+            type: "line",
+            data: { labels: filtered.map((point) => point.date), datasets: [{ data: filtered.map((point) => point.value), borderColor: dark ? "#38bdf8" : "#087f65", backgroundColor: dark ? "rgba(56,189,248,.12)" : "rgba(8,127,101,.10)", fill: true, pointRadius: 0, borderWidth: 2, tension: .2 }] },
+            options: { maintainAspectRatio: false, interaction: { intersect: false, mode: "index" }, plugins: { legend: { display: false }, tooltip: { callbacks: { label: (context) => money(context.parsed.y) } } }, scales: { x: { grid: { display: false }, ticks: { maxTicksLimit: 7, maxRotation: 0, color: tickColor, font: { size: 9 } } }, y: { grid: { color: gridColor }, ticks: { color: tickColor, font: { size: 9 }, callback: (value) => new Intl.NumberFormat("en-IN", { notation: "compact" }).format(value) } } } }
+        });
+    }
+
+    function renderDetail(data) {
+        currentDetail = data;
+        selectedHorizon = data.horizon_years || selectedHorizon;
+        $("#horizonSelect").value = String(selectedHorizon);
+        $("#predictionHeading").textContent = `${selectedHorizon}-year outlook`;
+        $("#predictionHorizon").textContent = `${selectedHorizon * 252} trading sessions`;
+        $("#companyName").textContent = data.company.name;
+        $("#companyMeta").textContent = `${data.company.symbol} · ${data.facts.sector || data.company.industry || "NIFTY 50"} · ${data.facts.industry || ""}`;
+        $("#lastPrice").textContent = money(data.latest_close);
+        $("#priceDate").textContent = `Latest available · ${data.as_of}`;
+        $("#companySource").href = safeLink(data.sources.prices_and_fundamentals);
+        const prediction = data.prediction;
+        const selectedHistoricalReturn = data.performance[`${selectedHorizon}y`];
+        const metrics = [
+            [`${selectedHorizon}Y historical return`, pct(selectedHistoricalReturn), selectedHistoricalReturn],
+            [`${selectedHorizon}Y estimated return`, prediction ? pct(prediction.expected_return) : "—", prediction?.expected_return],
+            ["Chance of gain", prediction ? pct(prediction.positive_return_probability) : "—", null],
+            ["Chance of loss", prediction ? pct(prediction.loss_probability) : "—", null],
+            ["Estimated loss if down", prediction && prediction.conditional_loss_if_negative != null ? pct(-prediction.conditional_loss_if_negative) : "—", -prediction?.conditional_loss_if_negative],
+            ["Buy decision", prediction?.decision || data.forecast_unavailable_reason || "Unavailable", null],
+        ];
+        $("#performance").innerHTML = metrics.map(([label, value, polarity]) => `<div class="metric"><div class="metric-label">${escapeHtml(label)}</div><div class="metric-value ${polarity > 0 ? "positive" : polarity < 0 ? "negative" : label === "Buy decision" && prediction?.decision === "Potential buy" ? "positive" : label === "Buy decision" && prediction?.decision === "Watch" ? "watch" : label === "Buy decision" && prediction?.decision === "Avoid" ? "negative" : ""}">${escapeHtml(value)}</div></div>`).join("");
+        drawPriceChart();
+        const facts = [["Sector / industry", data.facts.industry || data.facts.sector || "—"], ["Market capitalization", compactMoney(data.facts.market_cap)], ["Revenue growth", pct(data.facts.revenue_growth)], ["Profit margin", pct(data.facts.profit_margin)], ["Debt / equity", data.facts.debt_to_equity == null ? "—" : `${data.facts.debt_to_equity.toFixed(1)}%`], ["Trailing P/E", data.facts.trailing_pe == null ? "—" : data.facts.trailing_pe.toFixed(1)]];
+        $("#factsList").innerHTML = facts.map(([label, value]) => `<div class="fact"><span>${escapeHtml(label)}</span><strong title="${escapeHtml(value)}">${escapeHtml(value)}</strong></div>`).join("");
+        $("#profilePoints").innerHTML = data.profile_points.length ? data.profile_points.map((point) => `<li>${escapeHtml(point)}</li>`).join("") : "<li>No concise profile details were returned by the data source.</li>";
+        $("#factorsList").innerHTML = data.factors.length ? data.factors.map((factor) => `<div class="signal ${escapeHtml(factor.type)}"><span class="signal-dot"></span><div><strong>${escapeHtml(factor.label)}</strong><small>${escapeHtml(factor.context)}</small></div><span class="signal-value">${factor.label.toLowerCase().includes("growth") || factor.label.toLowerCase().includes("margin") ? pct(factor.value) : Number(factor.value).toFixed(1)}</span></div>`).join("") : `<div class="state">Fundamental growth and leverage fields were not supplied for this company.</div>`;
+        $("#evidenceList").innerHTML = data.evidence.length ? data.evidence.map((item) => `<article class="news-item"><a href="${safeLink(item.link)}" target="_blank" rel="noopener noreferrer">${escapeHtml(item.title)}</a><div class="news-meta"><span>${escapeHtml(item.source)}</span><span>Match ${Number(item.relevance).toFixed(2)}</span></div><div class="news-meta">${escapeHtml(item.text)}</div></article>`).join("") : `<div class="state">No matching sourced context was available.</div>`;
+        $("#summaryMode").textContent = data.summary.mode;
+        $("#summaryText").textContent = data.summary.text;
+        $("#summaryCitations").innerHTML = data.summary.citations.map((citation) => `<a href="${safeLink(citation.link)}" target="_blank" rel="noopener noreferrer">[${escapeHtml(citation.id)}] ${escapeHtml(citation.source)}</a>`).join("");
+        const validationNote = prediction?.model_supported ? "Selected-horizon holdout checks passed." : prediction?.validation_reason || "Selected-horizon holdout checks did not pass.";
+        $("#prediction").innerHTML = prediction ? `<div class="prediction-grid"><div class="prediction-cell"><span>Expected return / ${selectedHorizon} years</span><strong class="${prediction.expected_return > 0 ? "positive" : prediction.expected_return < 0 ? "negative" : ""}">${pct(prediction.expected_return)}</strong></div><div class="prediction-cell"><span>Probability of gain</span><strong>${pct(prediction.positive_return_probability)}</strong></div><div class="prediction-cell"><span>Probability of loss</span><strong>${pct(prediction.loss_probability)}</strong></div><div class="prediction-cell"><span>Estimated loss if negative</span><strong class="negative">${prediction.conditional_loss_if_negative == null ? "Unavailable" : pct(-prediction.conditional_loss_if_negative)}</strong></div><div class="prediction-cell"><span>Probability-weighted loss</span><strong class="negative">${prediction.expected_loss_contribution == null ? "Unavailable" : pct(-prediction.expected_loss_contribution)}</strong></div></div><div class="decision ${prediction.decision === "Potential buy" ? "buy" : prediction.decision === "Watch" ? "watch" : prediction.decision === "Avoid" ? "no-buy" : ""}">${escapeHtml(prediction.decision)}</div><div class="research-view ${prediction.decision === "Potential buy" ? "favorable" : prediction.decision === "Watch" ? "watch" : "weak"}">${escapeHtml(prediction.research_view)} · ${prediction.model_supported ? "holdout validated" : "not validated"}</div><div class="validation-note">${escapeHtml(validationNote)}</div><p>Potential buy/avoid reflects horizon-adjusted CAGR hurdle rates and probability of gain. Loss estimates are conditional severity, not worst-case limits.</p><a class="source-link" href="${safeLink(data.sources.prices_and_fundamentals)}" target="_blank" rel="noopener noreferrer">Forecast inputs and source ↗</a>` : `<div class="state">${escapeHtml(data.forecast_unavailable_reason || `No ${selectedHorizon}-year model estimate is available for this company.`)} Historical prices, company facts, and news are still available.</div>`;
+        renderNews(data.news, data.as_of);
+        $("#dataState").innerHTML = `<span class="live-pulse"></span> Data live through ${escapeHtml(data.as_of)}`;
+    }
+
+    function renderNews(articles, updatedAt) {
+        if (!articles || !articles.length) {
+            $("#newsList").innerHTML = `<div class="state">No recent company headlines were returned. <a href="${safeLink(currentDetail ? currentDetail.sources.news_search : '#')}" target="_blank" rel="noopener noreferrer">Open source search ↗</a></div>`;
+            return;
+        }
+        if (updatedAt) {
+            $("#newsUpdated").textContent = `Live · ${updatedAt}`;
+        }
+        $("#newsList").innerHTML = articles.map((article) => `
+            <article class="news-item">
+                <a href="${safeLink(article.link)}" target="_blank" rel="noopener noreferrer">${escapeHtml(article.title)}</a>
+                <div class="news-meta">
+                    <span class="news-source-tag">${escapeHtml(article.source || "Google News")}</span>
+                    <span>${escapeHtml(article.published || "")}</span>
+                </div>
+            </article>
+        `).join("");
+    }
+
+    async function refreshNews(symbol) {
+        const btn = $("#refreshNewsBtn");
+        if (btn) {
+            btn.disabled = true;
+            btn.textContent = "🔄 Fetching…";
+        }
+        try {
+            const data = await requestJson(`/api/news/${encodeURIComponent(symbol)}`);
+            renderNews(data.news, data.updated_at ? new Date(data.updated_at).toLocaleTimeString() : null);
+        } catch (error) {
+            console.error("Live news fetch failed:", error);
+        } finally {
+            if (btn) {
+                btn.disabled = false;
+                btn.textContent = "🔄 Refresh News";
+            }
+        }
+    }
+
+    function drawScanChart(rows) {
+        if (!window.Chart) return;
+        const dark = document.documentElement.dataset.theme === "dark";
+        const tickColor = dark ? "#8896ab" : "#788782";
+        const gridColor = dark ? "rgba(255, 255, 255, 0.06)" : "#edf1ef";
+        const sorted = rows.filter((row) => row.expected_return != null).slice(0, 14);
+        if (scanChart) scanChart.destroy();
+        scanChart = new Chart($("#scanChart"), { type: "bar", data: { labels: sorted.map((row) => row.symbol), datasets: [{ data: sorted.map((row) => row.expected_return * 100), backgroundColor: sorted.map((row) => row.decision === "Potential buy" ? (dark ? "#10b981" : "#258f70") : row.decision === "Watch" ? (dark ? "#38bdf8" : "#3b82f6") : (dark ? "#f87171" : "#b75f56")), borderRadius: 3, barThickness: 10 }] }, options: { indexAxis: "y", maintainAspectRatio: false, plugins: { legend: { display: false }, tooltip: { callbacks: { label: (context) => `${context.parsed.x.toFixed(1)}% estimated return` } } }, scales: { x: { grid: { color: gridColor }, ticks: { color: tickColor, font: { size: 9 }, callback: (value) => `${value}%` } }, y: { grid: { display: false }, ticks: { color: tickColor, font: { size: 9 } } } } } });
+    }
+
+    function renderScan(payload) {
+        scanRows = payload.rows || [];
+        selectedHorizon = payload.horizon_years || selectedHorizon;
+        $("#scanDescription").textContent = `Ranked by quantitative CAGR & risk-adjusted hurdles across NIFTY 50 (${selectedHorizon}Y horizon).`;
+        $("#scanReturnHeading").textContent = `Est. next ${selectedHorizon}Y`;
+        scanRows.sort((left, right) => (right.expected_return ?? -Infinity) - (left.expected_return ?? -Infinity));
+        $("#scanUpdated").textContent = `Quotes synced ${new Date(payload.updated_at).toLocaleTimeString()}`;
+        $("#scanRows").innerHTML = scanRows.map((row) => {
+            const statusClass = row.decision === "Potential buy" ? "buy" : row.decision === "Watch" ? "watch" : row.decision === "Avoid" ? "avoid" : "";
+            return `<tr data-symbol="${escapeHtml(row.symbol)}" class="${currentDetail && currentDetail.company.symbol === row.symbol ? "selected" : ""}"><td class="table-company">${escapeHtml(row.name)}</td><td class="table-symbol">${escapeHtml(row.symbol)}</td><td>${money(row.close)}</td><td class="${row.return_1y > 0 ? "positive" : row.return_1y < 0 ? "negative" : ""}">${pct(row.return_1y)}</td><td class="${row.return_5y > 0 ? "positive" : row.return_5y < 0 ? "negative" : ""}">${pct(row.return_5y)}</td><td class="${row.return_10y > 0 ? "positive" : row.return_10y < 0 ? "negative" : ""}">${pct(row.return_10y)}</td><td class="${row.expected_return > 0 ? "positive" : row.expected_return < 0 ? "negative" : ""}">${pct(row.expected_return)}</td><td>${pct(row.positive_return_probability)}</td><td>${pct(row.loss_probability)}</td><td class="negative">${row.conditional_loss_if_negative == null ? "—" : pct(-row.conditional_loss_if_negative)}</td><td><span class="estimate-status ${statusClass}" title="${escapeHtml(row.validation_reason || row.research_view || "Not available")}">${escapeHtml(row.decision || row.research_view || "Not available")}</span></td><td>${escapeHtml(row.as_of || "—")}</td></tr>`;
+        }).join("") || `<tr><td colspan="12" class="state">No price rows are available.</td></tr>`;
+        drawScanChart(scanRows);
+        $("#scanRows").querySelectorAll("tr[data-symbol]").forEach((row) => row.addEventListener("click", () => selectCompany(row.dataset.symbol, selectedHorizon)));
+    }
+
+    async function refreshScan(horizonYears, forceRefresh = false) {
+        const btn = $("#refreshScanBtn");
+        if (btn && forceRefresh) {
+            btn.disabled = true;
+            btn.textContent = "⚡ Syncing…";
+        }
+        const requestGeneration = ++scanRequestGeneration;
+        try {
+            const payload = await requestJson(`/api/scan?horizon=${horizonYears}${forceRefresh ? "&refresh=1" : ""}`);
+            if (requestGeneration === scanRequestGeneration) renderScan(payload);
+        } finally {
+            if (btn && forceRefresh) {
+                btn.disabled = false;
+                btn.textContent = "⚡ Refresh Quotes";
+            }
+        }
+    }
+
+    async function selectCompany(symbol, horizonYears = Number($("#horizonSelect").value), updateUrl = true, forceRefresh = false) {
+        $("#companySelect").value = symbol;
+        $("#horizonSelect").value = String(horizonYears);
+        selectedHorizon = horizonYears;
+        $("#researchButton").disabled = true;
+        $("#researchButton").textContent = "Researching…";
+        $(".shell").classList.add("loading");
+        try {
+            const data = await requestJson(`/api/company/${encodeURIComponent(symbol)}?horizon=${horizonYears}${forceRefresh ? "&refresh=1" : ""}`);
+            renderDetail(data);
+            $("#scanRows").querySelectorAll("tr").forEach((row) => row.classList.toggle("selected", row.dataset.symbol === symbol));
+            $("#selectionNote").textContent = `Research loaded · ${horizonYears}-year horizon · ${data.as_of}`;
+            if (updateUrl) history.replaceState(null, "", `/dashboard?company=${encodeURIComponent(symbol)}&horizon=${horizonYears}`);
+        } catch (error) {
+            $("#dataState").textContent = "Company data unavailable";
+            $("#newsList").innerHTML = `<div class="state error">${escapeHtml(error.message)}</div>`;
+        } finally {
+            $("#researchButton").disabled = false;
+            $("#researchButton").textContent = "Research";
+            $(".shell").classList.remove("loading");
+        }
+    }
+
+    async function runResearch(forceRefresh = false) {
+        const symbol = $("#companySelect").value;
+        const horizonYears = Number($("#horizonSelect").value);
+        await selectCompany(symbol, horizonYears, true, forceRefresh);
+        try {
+            await refreshScan(horizonYears, forceRefresh);
+        } catch (error) {
+            $("#scanUpdated").textContent = `Scan unavailable: ${error.message}`;
+        }
+    }
+
+    async function initialize() {
+        const select = $("#companySelect");
+        try {
+            const payload = await requestJson("/api/universe");
+            const companies = payload.companies || [];
+            select.innerHTML = companies.map((company) => `<option value="${escapeHtml(company.symbol)}">${escapeHtml(company.name)} (${escapeHtml(company.symbol)})</option>`).join("");
+            const requested = new URLSearchParams(location.search).get("company");
+            const requestedHorizon = Number(new URLSearchParams(location.search).get("horizon")) || 10;
+            $("#horizonSelect").value = String(Math.max(1, Math.min(10, requestedHorizon)));
+            const initial = companies.find((company) => company.symbol === requested) || companies.find((company) => company.symbol === "RELIANCE") || companies[0];
+            if (initial) await selectCompany(initial.symbol, Number($("#horizonSelect").value), false);
+        } catch (error) {
+            select.innerHTML = "<option>Constituent list unavailable</option>";
+            $("#dataState").textContent = "Market data unavailable";
+        }
+        try {
+            await refreshScan(selectedHorizon);
+        } catch (error) {
+            $("#scanRows").innerHTML = `<tr><td colspan="12" class="state error">${escapeHtml(error.message)}. Run <code>python run_pipeline.py</code> after data access is available.</td></tr>`;
+            $("#scanUpdated").textContent = "Model scan unavailable";
+        }
+    }
+
+    $("#companySelect").addEventListener("change", () => {
+        runResearch();
+    });
+    $("#horizonSelect").addEventListener("change", () => {
+        runResearch();
+    });
+    $("#researchButton").addEventListener("click", () => runResearch(true));
+    $("#refreshNewsBtn").addEventListener("click", () => {
+        const sym = currentDetail ? currentDetail.company.symbol : $("#companySelect").value;
+        if (sym) refreshNews(sym);
+    });
+    $("#refreshScanBtn").addEventListener("click", () => {
+        refreshScan(selectedHorizon, true);
+    });
+    $("#themeToggle").addEventListener("click", () => {
+        const nextTheme = document.documentElement.dataset.theme === "dark" ? "light" : "dark";
+        document.documentElement.dataset.theme = nextTheme;
+        localStorage.setItem("newssense-theme", nextTheme);
+        $("#themeToggle").setAttribute("aria-pressed", String(nextTheme === "dark"));
+        $("#themeToggle").setAttribute("aria-label", `Switch to ${nextTheme === "dark" ? "light" : "dark"} theme`);
+        $("#themeLabel").textContent = nextTheme === "dark" ? "Dark" : "Light";
+        drawPriceChart();
+        drawScanChart(scanRows);
+    });
+    document.querySelectorAll("[data-period]").forEach((button) => button.addEventListener("click", () => {
+        selectedPeriod = button.dataset.period;
+        document.querySelectorAll("[data-period]").forEach((item) => item.setAttribute("aria-pressed", String(item === button)));
+        drawPriceChart();
+    }));
+
+    initialize();
+
+    // Live real-time polling every 45 seconds
+    window.setInterval(async () => {
+        try {
+            await refreshScan(selectedHorizon, false);
+            if (currentDetail) {
+                await selectCompany(currentDetail.company.symbol, selectedHorizon, false, false);
+            }
+        } catch (e) {
+            console.warn("Live auto-update tick skipped:", e);
+        }
+    }, 45 * 1000);
+})();
+</script>
+</body>
+</html>

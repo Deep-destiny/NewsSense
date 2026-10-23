@@ -18,16 +18,16 @@
         }
 
         :root {
-            --bg:        #020305;
-            --surface:   rgba(8, 12, 22, 0.95);
+            --bg:        #06080e;
+            --surface:   rgba(12, 17, 30, 0.95);
             --border:    rgba(255, 255, 255, 0.08);
-            --border-glow: rgba(0, 229, 160, 0.35);
+            --border-glow: rgba(0, 210, 255, 0.35);
             --text:      #e8eaf2;
             --muted:     rgba(232, 234, 242, 0.45);
-            --bull:      #00e5a0;   /* neon emerald */
-            --bear:      #ff4560;   /* neon crimson */
-            --neutral:   #7b9cff;   /* cobalt blue */
-            --gold:      #ffd166;   /* gold */
+            --bull:      #00d2ff;   /* electric cyan (zero green) */
+            --bear:      #f43f5e;   /* neon crimson */
+            --neutral:   #3b82f6;   /* cobalt blue */
+            --gold:      #f59e0b;   /* gold */
             --font-disp: 'Syne', sans-serif;
             --font-body: 'Inter', sans-serif;
             --font-mono: 'IBM Plex Mono', monospace;
@@ -63,7 +63,7 @@
             transform: translate(-50%, -50%);
             width: 700px;
             height: 700px;
-            background: radial-gradient(circle, rgba(0, 229, 160, 0.06) 0%, rgba(123, 156, 255, 0.03) 45%, transparent 70%);
+            background: radial-gradient(circle, rgba(0, 210, 255, 0.07) 0%, rgba(59, 130, 246, 0.035) 45%, transparent 70%);
             pointer-events: none;
             z-index: 2;
         }
@@ -78,7 +78,7 @@
             border: 1px solid var(--border-glow);
             border-radius: 18px;
             padding: 42px 36px;
-            box-shadow: 0 30px 100px rgba(0, 0, 0, 0.85), 0 0 50px rgba(0, 229, 160, 0.12);
+            box-shadow: 0 30px 100px rgba(0, 0, 0, 0.85), 0 0 50px rgba(0, 210, 255, 0.15);
             backdrop-filter: blur(24px);
             -webkit-backdrop-filter: blur(24px);
             overflow: hidden;
@@ -141,8 +141,8 @@
             display: flex;
             align-items: center;
             justify-content: space-between;
-            background: rgba(0, 229, 160, 0.1);
-            border: 1px solid rgba(0, 229, 160, 0.4);
+            background: rgba(0, 210, 255, 0.08);
+            border: 1px solid rgba(0, 210, 255, 0.35);
             border-radius: 10px;
             padding: 16px 20px;
             text-decoration: none;
@@ -152,9 +152,9 @@
         }
 
         .guest-btn:hover {
-            background: rgba(0, 229, 160, 0.22);
+            background: rgba(0, 210, 255, 0.18);
             border-color: var(--bull);
-            box-shadow: 0 0 30px rgba(0, 229, 160, 0.25);
+            box-shadow: 0 0 30px rgba(0, 210, 255, 0.25);
             transform: translateY(-2px);
         }
 
@@ -241,7 +241,7 @@
         }
 
         .form-group input {
-            background: rgba(2, 3, 5, 0.85);
+            background: rgba(4, 7, 16, 0.85);
             border: 1px solid var(--border);
             border-radius: 8px;
             padding: 13px 16px;
@@ -259,8 +259,8 @@
 
         .form-group input:focus {
             border-color: var(--neutral);
-            box-shadow: 0 0 18px rgba(123, 156, 255, 0.25);
-            background: rgba(4, 7, 16, 0.95);
+            box-shadow: 0 0 18px rgba(59, 130, 246, 0.35);
+            background: rgba(8, 14, 28, 0.95);
         }
 
         .submit-btn {
@@ -268,8 +268,8 @@
             align-items: center;
             justify-content: center;
             gap: 10px;
-            background: var(--bull);
-            color: #000;
+            background: linear-gradient(135deg, var(--bull), var(--neutral));
+            color: #030612;
             border: none;
             border-radius: 8px;
             padding: 14px;
@@ -285,14 +285,15 @@
 
         .submit-btn:hover {
             transform: translateY(-2px);
-            box-shadow: 0 12px 30px rgba(0, 229, 160, 0.35);
+            box-shadow: 0 12px 30px rgba(0, 210, 255, 0.4);
+            filter: brightness(1.08);
         }
 
         /* Error alert */
         .error-banner {
-            background: rgba(255, 69, 96, 0.12);
-            border: 1px solid rgba(255, 69, 96, 0.35);
-            color: #ff8597;
+            background: rgba(244, 63, 94, 0.12);
+            border: 1px solid rgba(244, 63, 94, 0.35);
+            color: #fda4af;
             padding: 12px 16px;
             border-radius: 8px;
             font-family: var(--font-mono);
@@ -326,7 +327,7 @@
         <div class="auth-header">
             <span class="auth-tag"><span class="tag-dot"></span> SECURE GATEWAY // SQLITE PERSISTENCE</span>
             <h1 class="auth-title">ACCESS <span>NEWSSENSE</span></h1>
-            <p class="auth-sub">Choose your access mode to initialize the real-time FinBERT & RAG market intelligence terminal.</p>
+            <p class="auth-sub">Choose your access mode to open the NIFTY 50 company-performance research dashboard.</p>
         </div>
 
         {% if error %}

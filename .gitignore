@@ -6,3 +6,5 @@ __pycache__/
 .idea/
 .vscode/
 *.db
+models/*.pkl
+data/nifty50_universe.csv

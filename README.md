@@ -1,247 +1,37 @@
-# 📰 NewsSense
+# NewsSense
 
-[![Python](https://img.shields.io/badge/Python-3.10%20%7C%203.12-blue?logo=python)](https://www.python.org/)
-[![Flask](https://img.shields.io/badge/Flask-3.0.0-black?logo=flask)](https://flask.palletsprojects.com/)
-[![Transformers](https://img.shields.io/badge/HuggingFace-FinBERT-yellow?logo=huggingface)](https://huggingface.co/yiyanghkust/finbert-tone)
-[![RAG](https://img.shields.io/badge/RAG-TF--IDF%20Pipeline-purple)](https://en.wikipedia.org/wiki/Retrieval-augmented_generation)
-[![Docker](https://img.shields.io/badge/Docker-Ready-2496ED?logo=docker)](https://www.docker.com/)
-[![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
+NewsSense is an experimental NIFTY 50 company-research workspace. The public landing page leads to guest or SQLite-backed authentication. The dashboard combines adjusted-price history, company facts, source-linked recent coverage, TF-IDF retrieval, and a selectable 1–10 year return estimate (default: 10 years).
 
-**NewsSense** is an AI-powered financial sentiment analysis and market intelligence dashboard with **RAG (Retrieval-Augmented Generation)** for Indian Equities (NSE/BSE). It fuses real-time financial news ingestion with domain-specific NLP (**FinBERT**), a RAG pipeline for contextual intelligence, and historical stock market data to generate directional sentiment signals and market insights.
+## Run locally
 
----
-
-## 🔑 Key Features
-
-* **Real-Time News Ingestion:** Streaming headline extraction across Indian equities and market benchmarks via Google News RSS with strict 7-day temporal filtering.
-* **Domain-Specific Financial NLP:** Employs `yiyanghkust/finbert-tone`, a transformer pre-trained on corporate filings and the Financial PhraseBank to resolve financial polysemy and nuances.
-* **RAG Pipeline (Retrieval-Augmented Generation):** Indexes all ingested headlines into a TF-IDF vector store, performs semantic retrieval via cosine similarity, and generates contextual market intelligence summaries from top-K retrieved documents.
-* **In-Memory Headless Visualization:** Generates publication-ready sentiment distribution charts via Matplotlib's `Agg` engine, piped to Base64 data URIs for zero-disk I/O and stateless concurrency.
-* **Predictive Market Modeling:** Combines batch sentiment polarity with historical OHLCV candles to forecast intraday market direction (`Close > Open`) without lookahead bias.
-* **Containerized Microservice:** Fully containerized with CPU-optimized PyTorch wheels, layer-cached Docker builds, and persistent volume bind mounts.
-* **Regulatory Compliance:** Built-in SEBI regulatory disclaimer adhering to educational and technical research standards.
-
----
-
-## 🏗️ System Architecture & RAG Workflow
-
-```
-┌──────────────────────────────────────────────────────────────────────┐
-│                    USER INPUT (e.g. "RELIANCE")                      │
-└──────────────────────────┬───────────────────────────────────────────┘
-                           │
-                           ▼
-┌──────────────────────────────────────────────────────────────────────┐
-│                  Flask Controller (app.py)                            │
-│              Orchestrates the 6-step pipeline                        │
-└────┬──────────────┬──────────────┬──────────────┬───────────────────┘
-     │              │              │              │
-     ▼              ▼              ▼              ▼
-┌─────────┐  ┌───────────┐  ┌──────────┐  ┌──────────────────────┐
-│  STEP 1 │  │  STEP 2   │  │ STEP 3   │  │ STEP 4              │
-│ ingest  │  │ sentiment │  │ charts   │  │ train (ML Predict)   │
-│ .py     │  │ .py       │  │ .py      │  │ .py                  │
-│         │  │           │  │          │  │                      │
-│ Google  │  │ FinBERT   │  │ Base64   │  │ Logistic Regression  │
-│ News    │  │ Inference │  │ PNG      │  │ Inference            │
-│ RSS     │  │ Pipeline  │  │ In-Mem   │  │ (predict_market)     │
-└────┬────┘  └─────┬─────┘  └──────────┘  └──────────────────────┘
-     │             │
-     │             │
-     ▼             ▼
-┌──────────────────────────────────────────────────────────────────────┐
-│                    STEP 5: RAG PIPELINE (rag.py)                     │
-│                                                                      │
-│  ┌─────────────┐    ┌──────────────────┐    ┌───────────────────┐   │
-│  │  INDEXING    │    │   RETRIEVAL      │    │   GENERATION      │   │
-│  │             │    │                  │    │                   │   │
-│  │ News + NLP  │───▶│ Query → TF-IDF  │───▶│ Top-K Context     │   │
-│  │ → TF-IDF    │    │ → Cosine Sim    │    │ → Market Intel    │   │
-│  │ → Vector    │    │ → Top-K Docs    │    │ → Summary         │   │
-│  │   Store     │    │                  │    │                   │   │
-│  └─────────────┘    └──────────────────┘    └───────────────────┘   │
-│                                                                      │
-│  RAG Metadata: docs_indexed, docs_retrieved, avg_similarity,         │
-│  vector_dimensions, dominant_sentiment, market_outlook                │
-└──────────────────────────┬───────────────────────────────────────────┘
-                           │
-                           ▼
-┌──────────────────────────────────────────────────────────────────────┐
-│                 STEP 6: Jinja2 HTML5 Dashboard                       │
-│                                                                      │
-│   ┌─────────────┐  ┌───────────────┐  ┌───────────────────────┐     │
-│   │ Sentiment   │  │ ML Prediction │  │ 🧠 RAG Intelligence   │     │
-│   │ Metrics +   │  │ Signal +      │  │ Panel: Summary +      │     │
-│   │ Chart       │  │ Probabilities │  │ Retrieved Docs +      │     │
-│   │             │  │               │  │ Pipeline Metadata     │     │
-│   └─────────────┘  └───────────────┘  └───────────────────────┘     │
-│                                                                      │
-│   ┌─────────────────────────────────────────────────────────────┐   │
-│   │ Headlines Table: All FinBERT-classified articles            │   │
-│   └─────────────────────────────────────────────────────────────┘   │
-└──────────────────────────────────────────────────────────────────────┘
+```powershell
+python -m venv venv
+venv\Scripts\Activate.ps1
+pip install -r requirements.txt
+python run_pipeline.py
+python app.py
 ```
 
-### RAG Pipeline Deep Dive
+Open `http://localhost:5000`. Training downloads the current NIFTY 50 constituents and maximum available Yahoo Finance price history for each company; the first run can take several minutes. Company details and the scan refresh from their sources every five minutes. Yahoo data can be delayed or incomplete.
 
-```
-                    ┌────────────────────┐
-                    │   Raw News Items   │
-                    │   (from ingest.py) │
-                    └────────┬───────────┘
-                             │
-                    ┌────────▼───────────┐
-                    │  Sentiment-Enriched │
-                    │  Documents          │
-                    │  "headline [Sent:   │
-                    │   Positive, 0.94]"  │
-                    └────────┬───────────┘
-                             │
-               ┌─────────────▼─────────────┐
-               │      TF-IDF Vectorizer     │
-               │  • max_features=5000       │
-               │  • ngram_range=(1,2)       │
-               │  • sublinear_tf=True       │
-               │  • English stop words      │
-               └─────────────┬─────────────┘
-                             │
-               ┌─────────────▼─────────────┐
-               │   In-Memory Vector Store   │
-               │   (DocumentStore class)    │
-               │                            │
-               │  doc_vectors: CSR Matrix   │
-               │  metadata[]: parallel list │
-               └─────────────┬─────────────┘
-                             │
-                   User Query│
-                             │
-               ┌─────────────▼─────────────┐
-               │    Cosine Similarity       │
-               │    Search (Top-K=5)        │
-               └─────────────┬─────────────┘
-                             │
-               ┌─────────────▼─────────────┐
-               │  Context Assembly          │
-               │  • Sentiment Distribution  │
-               │  • Polarity Analysis       │
-               │  • Market Outlook          │
-               └─────────────┬─────────────┘
-                             │
-               ┌─────────────▼─────────────┐
-               │  Generated Summary         │
-               │  + RAG Metadata            │
-               │  → Rendered to Dashboard   │
-               └───────────────────────────┘
-```
+## Dashboard features
 
----
+- Three.js animated landing page with guest and account entry.
+- Current NIFTY 50 company selector, latest available quote, and interactive 1-, 5-, and 10-year price chart.
+- Historical returns and reported fundamentals, with growth/risk factors and company profile.
+- Recent Google News RSS coverage with publisher links and publication dates.
+- TF-IDF retrieval over company facts, historical performance, and news, with source citations.
+- A chart and sortable 50-company table of experimental next-year return estimates and positive-return probabilities.
+- Optional LLM synthesis using the OpenAI Chat Completions API. Set `OPENAI_API_KEY` in the local environment to enable it; without a key, the dashboard uses a deterministic retrieved-data summary. The LLM receives public research context only.
 
-## 📁 Repository Structure
+## Forecast methodology and limits
 
-```
-NewsSense/
-├── app.py                  # Main Flask application & MVC controller (6-step pipeline)
-├── run_pipeline.py         # Offline ML training & dataset construction pipeline
-├── requirements.txt        # Pinned Python package dependencies
-├── Dockerfile              # Lightweight CPU-optimized container specification
-├── docker-compose.yml      # Container orchestration with volume mounts
-├── models/
-│   └── sentiment_model.pkl # Serialized Logistic Regression artifact
-├── src/
-│   ├── __init__.py
-│   ├── ingest.py           # Google News RSS ingestion & title sanitization
-│   ├── sentiment.py        # FinBERT transformer inference & polarity scoring
-│   ├── rag.py              # RAG pipeline: TF-IDF indexing, retrieval, generation
-│   ├── dataset.py          # Yahoo Finance OHLCV ingestion & feature engineering
-│   ├── train.py            # Model training & calibrated probability inference
-│   └── charts.py           # Headless Matplotlib in-memory rasterization
-└── templates/
-    └── index.html          # Modern fintech-styled responsive dashboard with RAG panel
-```
+The Random Forest models use monthly price-derived momentum, volatility, and drawdown features. Separate models estimate adjusted-price return, gain/loss probability, and conditional loss severity at each available 1–10 year horizon. “Loss if negative” is conditional severity; “probability-weighted loss” multiplies it by the estimated loss probability. Chronological holdouts are purged by the selected horizon. Return error, probability Brier score, and conditional-loss error are each compared with simple baselines. The UI shows the probability-based model view (potential buy, hold, or avoid) separately from its holdout-validation status and exact failed checks. A potential-buy view is still unvalidated when the model fails its baseline tests. A company must have enough of its own history for the selected horizon. These estimates are not personalized investment recommendations and do not predict guaranteed profit.
 
----
+Without `OPENAI_API_KEY`, the RAG panel uses TF-IDF retrieval and a deterministic extractive summary. With a key configured locally, retrieved source snippets are sent to the OpenAI Chat Completions API for a concise cited summary. No API key is required for price, company-fact, news, or forecast features.
 
-## 🚀 Quick Start Guide
+Historical model evaluation uses today's constituents, which introduces survivorship bias. Financial facts may be missing or stale, company fundamentals are not all sector-normalized, and the price-only model does not incorporate news or filings. Backtest performance is not proof of future performance. Taxes, trading costs, liquidity, and individual risk tolerance are not modeled.
 
-### Option 1: Running Locally
+## Stack
 
-1. **Clone the repository:**
-   ```bash
-   git clone https://github.com/your-username/NewsSense.git
-   cd NewsSense
-   ```
-
-2. **Create virtual environment (recommended):**
-   ```bash
-   python -m venv venv
-   venv\Scripts\activate       # Windows
-   # source venv/bin/activate  # macOS/Linux
-   ```
-
-3. **Install dependencies:**
-   ```bash
-   pip install -r requirements.txt
-   ```
-
-4. **Train the predictive baseline model:**
-   ```bash
-   python run_pipeline.py
-   ```
-
-5. **Launch the Flask dashboard:**
-   ```bash
-   python app.py
-   ```
-   Open your browser and navigate to `http://localhost:5000`.
-
----
-
-### Option 2: Running with Docker Compose
-
-```bash
-docker compose up --build
-```
-The application will be accessible at `http://localhost:5000` with hot code reloading enabled.
-
----
-
-## 🧠 RAG Implementation Details
-
-| Component | Technology | Purpose |
-|-----------|-----------|---------|
-| **Document Indexing** | TF-IDF (scikit-learn) | Vectorize sentiment-enriched headlines into sparse feature vectors |
-| **Vector Store** | In-memory CSR Matrix | Store and retrieve document embeddings without external DB |
-| **Retrieval** | Cosine Similarity | Rank documents by semantic relevance to user query |
-| **Generation** | Rule-based Synthesis | Produce market intelligence summaries from retrieved context |
-| **Enrichment** | FinBERT Metadata | Augment each document with sentiment labels, scores, polarity |
-
-### How the RAG Pipeline Works:
-
-1. **Indexing Phase:** After FinBERT processes all headlines, each article is enriched with its sentiment label and confidence score, then vectorized using TF-IDF with bigram support.
-2. **Retrieval Phase:** When a user searches for a stock/sector, the query is vectorized using the same TF-IDF model and compared against all indexed documents via cosine similarity.
-3. **Generation Phase:** The top-K (default: 5) most relevant documents are assembled into context. Sentiment distribution, polarity analysis, and market outlook are computed and synthesized into a natural-language market intelligence summary.
-
----
-
-## 🔧 Tech Stack & Tools
-
-* **Backend & Web:** Python 3.10+, Flask, Jinja2
-* **NLP & Deep Learning:** Hugging Face Transformers, PyTorch, FinBERT (`yiyanghkust/finbert-tone`)
-* **RAG Pipeline:** TF-IDF Vectorization, Cosine Similarity Retrieval, Contextual Generation
-* **Machine Learning & Analytics:** Scikit-Learn (Logistic Regression, TfidfVectorizer), Pandas, NumPy
-* **Data Sources:** Google News RSS (`feedparser`), Yahoo Finance API (`yfinance`)
-* **Visualization:** Matplotlib (`Agg` backend, Base64 encoding)
-* **DevOps:** Docker, Docker Compose
-
----
-
-## ⚠️ Regulatory Notice (SEBI Disclaimer)
-
-This system is an academic and technical demonstration of NLP, RAG, and machine learning applied to financial datasets. The sentiment analysis, RAG-generated insights, and model predictions provided do not constitute registered investment or financial advice under the Securities and Exchange Board of India (SEBI) Investment Advisers Regulations, 2013.
-
----
-
-## 👤 Author
-
-**Deepak**  
-AI / Data Science Engineer
+Flask, pandas, NumPy, scikit-learn, yfinance, Three.js, and Chart.js. An optional Docker setup is included in `Dockerfile` and `docker-compose.yml`.
